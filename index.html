@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>情緒記錄鐘</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'sans-serif'],
+                    },
+                    colors: {
+                        romantic: {
+                            50: '#fff5f7',
+                            100: '#ffe4e8',
+                            200: '#fecdd6',
+                            300: '#fda4af',
+                            400: '#fb7185',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            700: '#be123c',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        .muyu-btn {
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.15s ease;
+        }
+        .muyu-btn:active {
+            transform: scale(0.88);
+        }
+        @keyframes floatUpHeart {
+            0% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+            50% { opacity: 0.8; transform: translateY(-40px) scale(1.3) rotate(-10deg); }
+            100% { opacity: 0; transform: translateY(-80px) scale(1.6) rotate(10deg); }
+        }
+        .animate-float-heart {
+            animation: floatUpHeart 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @keyframes subtlePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .animate-heart-beat {
+            animation: subtlePulse 2.5s infinite ease-in-out;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #fecdd6;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="h-full text-slate-800 flex flex-col font-sans bg-rose-50/50 antialiased selection:bg-rose-200">
+    <div id="app" class="flex-1 flex flex-col max-w-md w-full mx-auto bg-white/90 backdrop-blur-md shadow-2xl min-h-screen border-x border-rose-100/60 pb-20">
+        
+        <!-- Header & Role Selector Toggle -->
+        <header class="bg-gradient-to-r from-rose-600 via-pink-600 to-rose-500 text-white p-4 sticky top-0 z-30 shadow-md rounded-b-3xl">
+            <div class="flex flex-col gap-3">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-2.5">
+                        <div class="w-9 h-9 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white shadow-inner animate-heart-beat">
+                            <i class="fa-solid fa-heart text-lg"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-base font-bold tracking-wide flex items-center gap-1.5">
+                                雙人相處陪伴簿
+                                <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-normal">Love Notes</span>
+                            </h1>
+                            <p class="text-[11px] text-rose-100/90 font-light">傾聽真實感受 • 累積溫柔思念</p>
+                        </div>
+                    </div>
+
+                    <div class="text-right">
+                        <span class="text-[10px] text-rose-100 block opacity-80">當前切換</span>
+                        <span id="currentRoleBadge" class="text-xs font-bold bg-white text-rose-600 px-2.5 py-0.5 rounded-full shadow-xs inline-block">
+                            <i class="fa-solid fa-user-ninja mr-1"></i>秋刀魚
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Role Selector Pill -->
+                <div class="grid grid-cols-2 bg-black/15 p-1 rounded-2xl border border-white/20 text-xs">
+                    <button id="roleMe" onclick="switchUser('Me')" class="py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-user-ninja"></i> 秋刀魚
+                    </button>
+                    <button id="rolePartner" onclick="switchUser('Partner')" class="py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-user-astronaut"></i> 白鯧魚
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Status Banner -->
+        <div id="syncStatusBanner" class="bg-rose-50 border-b border-rose-100 px-4 py-1.5 text-[11px] text-rose-800 flex justify-between items-center">
+            <span id="syncStatusText"><i class="fa-solid fa-arrows-rotate animate-spin mr-1"></i> 雲端連線中...</span>
+            <span class="bg-rose-200/80 text-rose-900 text-[10px] px-2 py-0.5 rounded-full font-semibold">Google Sheets Sync</span>
+        </div>
+
+        <main class="flex-1 p-4 space-y-4 overflow-y-auto">
+            
+            <!-- SECTION 1: Home View -->
+            <section id="sec-home" class="space-y-4">
+                
+                <!-- Database Driven Calm Timer Widget -->
+                <div class="bg-gradient-to-br from-slate-900 via-rose-950 to-pink-950 text-white rounded-3xl p-5 shadow-xl relative overflow-hidden border border-rose-900/30">
+                    <div class="absolute -right-6 -bottom-6 opacity-10 text-8xl text-rose-300 pointer-events-none">
+                        <i class="fa-solid fa-heart-pulse"></i>
+                    </div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 text-rose-200 border border-rose-400/30 text-[11px] font-medium backdrop-blur-xs">
+                            <span class="w-2 h-2 rounded-full bg-pink-400 animate-ping"></span>
+                            平穩陪伴時光
+                        </span>
+                        <span class="text-[10px] text-rose-200/80 bg-white/10 px-2.5 py-1 rounded-lg border border-white/10">
+                            <i class="fa-solid fa-database mr-1"></i>雲端資料庫精確計時
+                        </span>
+                    </div>
+
+                    <div class="text-center py-2">
+                        <div id="timerDisplay" class="font-mono text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-pink-100 to-amber-200">
+                            00天 00時 00分 00秒
+                        </div>
+                        <p class="text-[10px] text-rose-200/70 mt-1.5 font-light">依據試算表最新情緒日誌時間起算 • 想念按鈕不影響計時</p>
+                    </div>
+                </div>
+
+                <!-- Action View Toggle Tabs -->
+                <div class="bg-rose-100/60 p-1 rounded-2xl flex border border-rose-200 text-xs font-semibold">
+                    <button id="actionTabMiss" onclick="switchActionTab('miss')" class="flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-rose-700 bg-white shadow-xs">
+                        <i class="fa-solid fa-drum text-rose-500"></i> 思念叩擊 (按按鈕)
+                    </button>
+                    <button id="actionTabLog" onclick="switchActionTab('log')" class="flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-500 hover:text-rose-700">
+                        <i class="fa-solid fa-feather-pointed text-pink-500"></i> 感受紀錄 (寫日誌)
+                    </button>
+                </div>
+
+                <!-- TAB A: Woodblock Muyu Screen -->
+                <div id="actionViewMiss" class="bg-gradient-to-br from-rose-50 via-pink-50/50 to-orange-50/30 rounded-3xl p-5 border border-rose-200/80 shadow-sm flex flex-col items-center justify-between min-h-[310px] relative overflow-hidden">
+                    <div class="w-full text-center">
+                        <div class="inline-block px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-[11px] font-medium mb-1">
+                            <i class="fa-solid fa-sparkles mr-1 text-amber-500"></i><span id="intervalBatchText">10</span> 秒自動歸併為一筆記錄
+                        </div>
+                        <p class="text-xs text-rose-600/80 font-light">此刻想起對方時按按鈕，將無聲思念化為溫柔的痕跡</p>
+                    </div>
+
+                    <!-- Woodblock Muyu Button -->
+                    <div class="my-6 flex flex-col items-center justify-center relative w-full">
+                        <div id="muyuFloatContainer" class="absolute inset-0 pointer-events-none flex justify-center items-center"></div>
+                        
+                        <button id="muyuBtn" onclick="handleMuyuClick()" class="muyu-btn relative w-36 h-36 rounded-full bg-gradient-to-tr from-rose-500 via-pink-500 to-rose-400 hover:from-rose-600 hover:to-pink-600 text-white font-bold shadow-xl shadow-rose-300/60 flex flex-col items-center justify-center border-4 border-white group cursor-pointer active:scale-90 transition-all">
+                            <div class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-heart text-3xl text-white"></i>
+                            </div>
+                            <span class="text-xs font-bold tracking-wider text-rose-50">想你</span>
+                        </button>
+                    </div>
+
+                    <div class="w-full text-center text-xs text-rose-800 bg-white/80 py-2.5 px-4 rounded-2xl border border-rose-200/60 shadow-2xs">
+                        當前連擊批次：<span id="currentBatchCount" class="font-extrabold text-rose-600 text-base">0</span> 次
+                    </div>
+                </div>
+
+                <!-- TAB B: Emotion Form Entry Screen -->
+                <div id="actionViewLog" class="hidden bg-white rounded-3xl p-5 border border-pink-100 shadow-sm space-y-4">
+                    <div class="flex justify-between items-center border-b border-rose-100 pb-3">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                                <i class="fa-solid fa-heart-crack text-pink-500"></i> 傾訴表達感受
+                            </h3>
+                            <p class="text-[11px] text-slate-400">寫下委屈與落差，用客觀語言讓對方看見內心</p>
+                        </div>
+                        <span class="text-[10px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full font-semibold">會重置時間</span>
+                    </div>
+
+                    <div class="p-3 bg-rose-50/50 rounded-2xl border border-rose-100/60 text-xs space-y-1.5">
+                        <div class="flex justify-between text-slate-600">
+                            <span>紀錄身分：</span>
+                            <span id="formUserTag" class="font-bold text-rose-600">秋刀魚</span>
+                        </div>
+                        <div class="flex justify-between text-slate-500 text-[11px]">
+                            <span>表達原則：</span>
+                            <span class="text-slate-700">用「我覺得...」替代指責與爭執</span>
+                        </div>
+                    </div>
+
+                    <button onclick="openLogModal()" class="w-full py-3.5 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 active:scale-98 text-white font-semibold rounded-2xl text-xs shadow-md shadow-rose-200 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-pen-nib"></i> 開始撰寫我的感受紀錄
+                    </button>
+                </div>
+
+            </section>
+
+            <section id="sec-logs" class="hidden space-y-4">
+                <div class="flex bg-rose-100/60 p-1 rounded-2xl text-xs font-medium text-center border border-rose-200">
+                    <button id="tabBtnLog" onclick="switchLogTab('emotion')" class="flex-1 py-2.5 rounded-xl font-bold transition-all text-rose-700 bg-white shadow-xs flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-book-heart text-rose-500"></i> 情緒日誌
+                    </button>
+                    <button id="tabBtnMiss" onclick="switchLogTab('miss')" class="flex-1 py-2.5 rounded-xl transition-all text-slate-500 hover:text-rose-700 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-heart-circle-check text-pink-500"></i> 想念時間線
+                    </button>
+                </div>
+
+                <!-- Emotion Logs List -->
+                <div id="tabContentLog" class="space-y-3">
+                    <div id="emotionListContainer" class="space-y-3">
+                        <!-- Dynamic Injection -->
+                    </div>
+                </div>
+
+                <!-- Muyu Logs List -->
+                <div id="tabContentMiss" class="hidden space-y-3">
+                    <div class="grid grid-cols-3 gap-2 bg-gradient-to-r from-rose-50 to-pink-50 p-3 rounded-2xl text-center text-xs border border-rose-100">
+                        <div>
+                            <span class="text-slate-400 text-[10px] block">你累計</span>
+                            <span id="muyuTotalMe" class="font-extrabold text-rose-600 text-sm">0 次</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 text-[10px] block">女友累計</span>
+                            <span id="muyuTotalPartner" class="font-extrabold text-pink-600 text-sm">0 次</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 text-[10px] block">總想念批次</span>
+                            <span id="muyuTotalBatches" class="font-extrabold text-slate-700 text-sm">0 筆</span>
+                        </div>
+                    </div>
+
+                    <div id="muyuListContainer" class="space-y-2">
+                        <!-- Dynamic Injection -->
+                    </div>
+                </div>
+            </section>
+
+            <section id="sec-stats" class="hidden space-y-4">
+                <div class="bg-rose-50 border border-rose-200/80 rounded-2xl p-3.5 text-xs text-rose-900 leading-relaxed flex items-start gap-2.5">
+                    <i class="fa-solid fa-shield-heart text-rose-500 text-base mt-0.5"></i>
+                    <div>
+                        <strong class="font-semibold block mb-0.5">中立維護原則：</strong>
+                        統計僅用於歸納常見矛盾議題，協助釐清吵架根源。嚴禁比對發言次數與情緒起伏，避免作為攻擊指責之工具。
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-white p-3.5 rounded-2xl border border-rose-100 shadow-2xs">
+                        <span class="text-[11px] text-slate-400 font-medium block">最長平穩紀錄</span>
+                        <div id="statMaxCalm" class="text-lg font-black text-emerald-600 mt-1">00天 00時</div>
+                        <p class="text-[10px] text-slate-400 mt-0.5">雙方共同努力的最高紀錄</p>
+                    </div>
+
+                    <div class="bg-white p-3.5 rounded-2xl border border-rose-100 shadow-2xs">
+                        <span class="text-[11px] text-slate-400 font-medium block">雙方想念敲擊數</span>
+                        <div id="statTotalMissCount" class="text-lg font-black text-rose-500 mt-1">0 次</div>
+                        <p class="text-[10px] text-slate-400 mt-0.5">留在日常裡的思念印記</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-2xs space-y-2">
+                    <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                        <i class="fa-solid fa-chart-simple text-rose-500"></i> 衝突議題分類歸納
+                    </h4>
+                    <p class="text-[11px] text-slate-400">客觀顯示重複發生的相處議題類別：</p>
+                    <div class="h-56 relative pt-2">
+                        <canvas id="tagsChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section id="sec-settings" class="hidden space-y-4">
+                <!-- Manual Cloud Sync Trigger Box -->
+                <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-2xs space-y-3">
+                    <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5 border-b border-rose-50 pb-2.5">
+                        <i class="fa-solid fa-cloud-arrow-up text-emerald-600"></i> Google 試算表雲端資料庫
+                    </h3>
+                    <p class="text-[11px] text-slate-500 leading-relaxed">
+                        系統已預設連結您的 Google Sheets Web App 雲端後端，保持雙手機能實時同步。
+                    </p>
+
+                    <button onclick="syncWithGas()" class="w-full py-2.5 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-arrows-rotate"></i> 立即與雲端資料庫手動同步
+                    </button>
+                </div>
+
+                <!-- Muyu Batch Interval Config -->
+                <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-2xs space-y-2">
+                    <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5 border-b border-rose-50 pb-2.5">
+                        <i class="fa-solid fa-clock text-rose-400"></i> 想念點擊批次間隔
+                    </h3>
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs text-slate-600">連擊判定時長：</label>
+                        <select id="muyuIntervalSelect" onchange="updateMuyuInterval()" class="px-3 py-1.5 text-xs border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-400">
+                            <option value="5000">5 秒</option>
+                            <option value="10000" selected>10 秒 (預設)</option>
+                            <option value="15000">15 秒</option>
+                            <option value="30000">30 秒</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Rich Romantic Communication Rules & Reminders -->
+                <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-2xs space-y-3">
+                    <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5 border-b border-rose-50 pb-2.5">
+                        <i class="fa-solid fa-heart-circle-bolt text-rose-500"></i> 雙方溝通與相處約定叮嚀
+                    </h3>
+                    
+                    <ul class="text-[11px] text-slate-600 space-y-2.5 leading-relaxed">
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-seedling text-rose-400 mt-0.5"></i>
+                            <div>
+                                <strong class="text-slate-800">1. 紀錄是為了理解，不是爭論對錯：</strong>
+                                本工具旨在記錄個人的內心真實受感，並非法庭裁判。嚴禁以紀錄內容作為對質與指責對方的武器。
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-face-smile text-amber-400 mt-0.5"></i>
+                            <div>
+                                <strong class="text-slate-800">2. 情緒當下不翻閱，平靜時再復盤：</strong>
+                                爭執發生時請先冷靜。等雙方情緒皆緩和後，再一起打開紀錄本觀察相處模式與重複爆點。
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-feather text-pink-400 mt-0.5"></i>
+                            <div>
+                                <strong class="text-slate-800">3. 用「我覺得...」取代指責式語言：</strong>
+                                撰寫紀錄時，多描述「發生的事實」與「我的個人感受」，減少「你總是...」、「你都不...」等攻擊性句型。
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-lock text-rose-400 mt-0.5"></i>
+                            <div>
+                                <strong class="text-slate-800">4. 尊重感受的不可修改性：</strong>
+                                日誌發表後無法修改與刪除，請誠實面對當下的感受，並接納對方提交時的真實心境。
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-heart-circle-plus text-emerald-400 mt-0.5"></i>
+                            <div>
+                                <strong class="text-slate-800">5. 看見衝突，也多看見思念：</strong>
+                                不要讓相處只剩下爭吵。多善用想念木魚表達關注，平衡彼此在日常裡的愛意與陪伴痕跡。
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bg-rose-50 p-4 rounded-2xl border border-rose-200/60 space-y-2">
+                    <h3 class="text-xs font-bold text-rose-800 flex items-center gap-1">
+                        <i class="fa-solid fa-triangle-exclamation"></i> 危險區域
+                    </h3>
+                    <p class="text-[11px] text-rose-600">需要雙方口頭同意後執行，將清除所有紀錄。</p>
+                    <button onclick="confirmClearAllData()" class="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl transition">
+                        一鍵清空所有資料
+                    </button>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Fixed Bottom Navigation Bar -->
+        <nav class="bg-white/95 backdrop-blur-md border-t border-rose-100 p-2 grid grid-cols-4 gap-1 text-center text-[11px] fixed bottom-0 max-w-md w-full z-40 rounded-t-2xl shadow-lg">
+            <button onclick="switchMainNav('home')" id="navHome" class="py-1.5 px-1 text-rose-600 font-bold flex flex-col items-center gap-0.5">
+                <i class="fa-solid fa-house-heart text-base"></i>
+                <span>首頁</span>
+            </button>
+            <button onclick="switchMainNav('logs')" id="navLogs" class="py-1.5 px-1 text-slate-400 hover:text-slate-800 flex flex-col items-center gap-0.5">
+                <i class="fa-solid fa-rectangle-list text-base"></i>
+                <span>紀錄</span>
+            </button>
+            <button onclick="switchMainNav('stats')" id="navStats" class="py-1.5 px-1 text-slate-400 hover:text-slate-800 flex flex-col items-center gap-0.5">
+                <i class="fa-solid fa-chart-pie text-base"></i>
+                <span>統計</span>
+            </button>
+            <button onclick="switchMainNav('settings')" id="navSettings" class="py-1.5 px-1 text-slate-400 hover:text-slate-800 flex flex-col items-center gap-0.5">
+                <i class="fa-solid fa-gear text-base"></i>
+                <span>設定</span>
+            </button>
+        </nav>
+    </div>
+
+    <div id="logModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+            <div class="p-4 bg-gradient-to-r from-rose-600 to-pink-600 text-white flex justify-between items-center">
+                <h3 id="modalTitle" class="font-bold text-sm flex items-center gap-1.5">
+                    <i class="fa-solid fa-heart-crack"></i> 新增情緒感受紀錄
+                </h3>
+                <button onclick="closeLogModal()" class="text-rose-100 hover:text-white transition p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="logForm" onsubmit="handleLogFormSubmit(event)" class="p-4 overflow-y-auto space-y-3.5 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">1. 事件簡述 <span class="text-rose-500">*</span></label>
+                    <textarea id="logEvent" required rows="2" placeholder="請客觀描述發生的具體事件或情境，避免指責語氣..." class="w-full px-3 py-2 border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-400 focus:outline-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">2. 我的真實感受 <span class="text-rose-500">*</span></label>
+                    <textarea id="logFeelings" required rows="2" placeholder="用「我覺得...」開頭，表達委屈、孤單或被忽略等真實感受..." class="w-full px-3 py-2 border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-400 focus:outline-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">3. 失望/難受程度 (1 ~ 5 分) <span class="text-rose-500">*</span></label>
+                    <div class="flex items-center gap-3">
+                        <input type="range" id="logDisappointment" min="1" max="5" value="3" oninput="document.getElementById('disapVal').innerText = this.value" class="flex-1 accent-rose-500">
+                        <span id="disapVal" class="w-8 text-center font-bold text-xs bg-rose-100 text-rose-700 py-1 rounded-lg">3</span> 分
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">4. 我需要對方知道的事 / 期待（選填）</label>
+                    <textarea id="logNeeds" rows="2" placeholder="希望對方如何陪伴或未來可以嘗試調整的小行動..." class="w-full px-3 py-2 border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-400 focus:outline-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">5. 議題標籤（可多選）</label>
+                    <div class="flex flex-wrap gap-1.5 pt-1" id="tagOptionsContainer">
+                        <!-- Dynamic Tag Chips -->
+                    </div>
+                </div>
+
+                <div class="pt-2 flex justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="closeLogModal()" class="px-4 py-2 border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50 font-medium">取消</button>
+                    <button type="submit" class="px-5 py-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-xl font-semibold shadow-md">儲存送出</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const PRESET_TAGS = ["價值觀差異", "溝通語氣", "邊界感與安全感", "生活習慣", "陪伴時間與分配", "承諾與期望落差", "情緒消化方式"];
+        const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbyTuCrI0GTnWn6taCAhaht7aKiTasKiN6f2QFdr4YX3wh_XqWI4oB3pmy8SyVSIzv5J/exec";
+
+        let state = {
+            currentUser: 'Me',
+            muyuInterval: 10000,
+            gasUrl: DEFAULT_GAS_URL,
+            lastResetTimestamp: Date.now(),
+            muyuBatch: {
+                startTime: null,
+                count: 0,
+                timer: null,
+                lastClickTime: 0
+            },
+            logs: [],
+            misses: []
+        };
+
+        let chartInstance = null;
+        let timerInterval = null;
+
+        function switchUser(role) {
+            state.currentUser = role;
+            updateUserRoleUI();
+        }
+
+        function updateUserRoleUI() {
+            const badge = document.getElementById('currentRoleBadge');
+            const formUserTag = document.getElementById('formUserTag');
+            const btnMe = document.getElementById('roleMe');
+            const btnPartner = document.getElementById('rolePartner');
+
+            if (state.currentUser === 'Me') {
+                badge.innerHTML = `<i class="fa-solid fa-user-ninja mr-1"></i>秋刀魚`;
+                badge.className = "text-xs font-bold bg-white text-rose-600 px-2.5 py-0.5 rounded-full shadow-xs inline-block";
+                
+                btnMe.className = "py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1 bg-white text-rose-600 shadow-xs";
+                btnPartner.className = "py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1 text-white/80 hover:text-white";
+                
+                if (formUserTag) formUserTag.innerText = "秋刀魚";
+            } else {
+                badge.innerHTML = `<i class="fa-solid fa-user-astronaut mr-1"></i>白鯧魚`;
+                badge.className = "text-xs font-bold bg-white text-pink-600 px-2.5 py-0.5 rounded-full shadow-xs inline-block";
+                
+                btnMe.className = "py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1 text-white/80 hover:text-white";
+                btnPartner.className = "py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1 bg-white text-pink-600 shadow-xs";
+                
+                if (formUserTag) formUserTag.innerText = "白鯧魚";
+            }
+        }
+
+        function switchActionTab(tab) {
+            const btnMiss = document.getElementById('actionTabMiss');
+            const btnLog = document.getElementById('actionTabLog');
+            const viewMiss = document.getElementById('actionViewMiss');
+            const viewLog = document.getElementById('actionViewLog');
+
+            if (tab === 'miss') {
+                btnMiss.className = "flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-rose-700 bg-white shadow-xs";
+                btnLog.className = "flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-500 hover:text-rose-700";
+                viewMiss.classList.remove('hidden');
+                viewLog.classList.add('hidden');
+            } else {
+                btnLog.className = "flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-rose-700 bg-white shadow-xs";
+                btnMiss.className = "flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-500 hover:text-rose-700";
+                viewLog.classList.remove('hidden');
+                viewMiss.classList.add('hidden');
+            }
+        }
+
+        function switchMainNav(nav) {
+            const navs = ['home', 'logs', 'stats', 'settings'];
+            navs.forEach(n => {
+                const sec = document.getElementById('sec-' + n);
+                const btn = document.getElementById('nav' + n.charAt(0).toUpperCase() + n.slice(1));
+                
+                if (n === nav) {
+                    sec.classList.remove('hidden');
+                    btn.className = "py-1.5 px-1 text-rose-600 font-bold flex flex-col items-center gap-0.5";
+                } else {
+                    sec.classList.add('hidden');
+                    btn.className = "py-1.5 px-1 text-slate-400 hover:text-slate-800 flex flex-col items-center gap-0.5";
+                }
+            });
+
+            if (nav === 'stats') {
+                renderStatsChart();
+            }
+        }
+
+        function switchLogTab(tab) {
+            const btnLog = document.getElementById('tabBtnLog');
+            const btnMiss = document.getElementById('tabBtnMiss');
+            const contentLog = document.getElementById('tabContentLog');
+            const contentMiss = document.getElementById('tabContentMiss');
+
+            if (tab === 'emotion') {
+                btnLog.className = "flex-1 py-2.5 rounded-xl font-bold transition-all text-rose-700 bg-white shadow-xs flex items-center justify-center gap-1.5";
+                btnMiss.className = "flex-1 py-2.5 rounded-xl transition-all text-slate-500 hover:text-rose-700 flex items-center justify-center gap-1.5";
+                contentLog.classList.remove('hidden');
+                contentMiss.classList.add('hidden');
+            } else {
+                btnMiss.className = "flex-1 py-2.5 rounded-xl font-bold transition-all text-rose-700 bg-white shadow-xs flex items-center justify-center gap-1.5";
+                btnLog.className = "flex-1 py-2.5 rounded-xl transition-all text-slate-500 hover:text-rose-700 flex items-center justify-center gap-1.5";
+                contentMiss.classList.remove('hidden');
+                contentLog.classList.add('hidden');
+            }
+        }
+
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playMuyuSound() {
+            try {
+                if (!audioCtx) audioCtx = new AudioContext();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(650, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.08);
+
+                gain.gain.setValueAtTime(1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.09);
+            } catch(e) {
+                console.log("Audio play error:", e);
+            }
+        }
+
+        window.onload = function() {
+            loadLocalState();
+            setupTagChips();
+            updateUserRoleUI();
+            startTimer();
+            syncWithGas();
+        };
+
+        function saveLocalState() {
+            localStorage.setItem('app_emotion_state', JSON.stringify({
+                lastResetTimestamp: state.lastResetTimestamp,
+                muyuInterval: state.muyuInterval,
+                logs: state.logs,
+                misses: state.misses
+            }));
+        }
+
+        function loadLocalState() {
+            const saved = localStorage.getItem('app_emotion_state');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    state.lastResetTimestamp = parsed.lastResetTimestamp || Date.now();
+                    state.muyuInterval = parsed.muyuInterval || 10000;
+                    state.logs = parsed.logs || [];
+                    state.misses = parsed.misses || [];
+                } catch(e) {
+                    console.error("Failed to parse local state", e);
+                }
+            }
+        }
+
+        function recalculateResetTimeFromLogs() {
+            if (state.logs && state.logs.length > 0) {
+                const timestamps = state.logs.map(l => new Date(l.timestamp).getTime()).filter(t => !isNaN(t));
+                if (timestamps.length > 0) {
+                    state.lastResetTimestamp = Math.max(...timestamps);
+                }
+            }
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimerDisplay, 1000);
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            let elapsed = Date.now() - state.lastResetTimestamp;
+            if (elapsed < 0) elapsed = 0;
+
+            const seconds = Math.floor((elapsed / 1000) % 60);
+            const minutes = Math.floor((elapsed / (1000 * 60)) % 60);
+            const hours = Math.floor((elapsed / (1000 * 60 * 60)) % 24);
+            const days = Math.floor(elapsed / (1000 * 60 * 60 * 24));
+
+            const pad = (n) => String(n).padStart(2, '0');
+            const timerEl = document.getElementById('timerDisplay');
+            if (timerEl) {
+                timerEl.innerText = `${pad(days)}天 ${pad(hours)}時 ${pad(minutes)}分 ${pad(seconds)}秒`;
+            }
+        }
+
+        function handleMuyuClick() {
+            playMuyuSound();
+            spawnFloatHeart();
+
+            const now = Date.now();
+
+            if (!state.muyuBatch.startTime || (now - state.muyuBatch.lastClickTime > state.muyuInterval)) {
+                if (state.muyuBatch.count > 0) {
+                    commitMuyuBatch();
+                }
+                state.muyuBatch.startTime = now;
+                state.muyuBatch.count = 1;
+            } else {
+                state.muyuBatch.count += 1;
+            }
+
+            state.muyuBatch.lastClickTime = now;
+            document.getElementById('currentBatchCount').innerText = state.muyuBatch.count;
+
+            if (state.muyuBatch.timer) clearTimeout(state.muyuBatch.timer);
+            state.muyuBatch.timer = setTimeout(() => {
+                commitMuyuBatch();
+            }, state.muyuInterval);
+        }
+
+        function commitMuyuBatch() {
+            if (state.muyuBatch.count <= 0) return;
+
+            const newMiss = {
+                id: 'miss_' + Date.now(),
+                user: state.currentUser,
+                timestamp: new Date(state.muyuBatch.startTime).toISOString(),
+                count: state.muyuBatch.count
+            };
+
+            state.misses.unshift(newMiss);
+            saveLocalState();
+            postToGas({ action: 'addMiss', data: newMiss });
+
+            state.muyuBatch.startTime = null;
+            state.muyuBatch.count = 0;
+            document.getElementById('currentBatchCount').innerText = 0;
+
+            renderMuyuList();
+            renderStatsChart();
+        }
+
+        function spawnFloatHeart() {
+            const container = document.getElementById('muyuFloatContainer');
+            const el = document.createElement('div');
+            el.className = 'absolute text-rose-500 font-extrabold text-sm animate-float-heart flex items-center gap-1 drop-shadow-xs pointer-events-none';
+            el.innerHTML = '<i class="fa-solid fa-heart text-rose-500"></i> 思念 +1';
+            
+            const randomX = (Math.random() - 0.5) * 60;
+            el.style.left = `calc(50% + ${randomX}px)`;
+            el.style.top = '10px';
+
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        function setupTagChips() {
+            const container = document.getElementById('tagOptionsContainer');
+            container.innerHTML = '';
+            PRESET_TAGS.forEach(tag => {
+                const label = document.createElement('label');
+                label.className = 'cursor-pointer select-none';
+                label.innerHTML = `
+                    <input type="checkbox" value="${tag}" class="hidden peer">
+                    <span class="px-2.5 py-1 rounded-lg border border-slate-200 text-[11px] text-slate-600 peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-rose-500 transition inline-block">
+                        ${tag}
+                    </span>
+                `;
+                container.appendChild(label);
+            });
+        }
+
+        function openLogModal() {
+            document.getElementById('logForm').reset();
+            setupTagChips();
+            document.getElementById('disapVal').innerText = 3;
+            document.getElementById('logModal').classList.remove('hidden');
+        }
+
+        function closeLogModal() {
+            document.getElementById('logModal').classList.add('hidden');
+        }
+
+        function handleLogFormSubmit(e) {
+            e.preventDefault();
+
+            const eventVal = document.getElementById('logEvent').value;
+            const feelingsVal = document.getElementById('logFeelings').value;
+            const disappointmentVal = parseInt(document.getElementById('logDisappointment').value);
+            const needsVal = document.getElementById('logNeeds').value;
+
+            const selectedTags = [];
+            document.querySelectorAll('#tagOptionsContainer input[type="checkbox"]:checked').forEach(cb => {
+                selectedTags.push(cb.value);
+            });
+
+            const nowIso = new Date().toISOString();
+            const newLog = {
+                id: 'log_' + Date.now(),
+                user: state.currentUser,
+                timestamp: nowIso,
+                event: eventVal,
+                feelings: feelingsVal,
+                disappointment: disappointmentVal,
+                needs: needsVal,
+                tags: selectedTags
+            };
+
+            state.logs.unshift(newLog);
+            state.lastResetTimestamp = new Date(nowIso).getTime();
+
+            postToGas({ action: 'addLog', data: newLog });
+
+            saveLocalState();
+            closeLogModal();
+            renderAll();
+        }
+
+        function renderAll() {
+            renderLogsList();
+            renderMuyuList();
+            renderStatsChart();
+            updateTimerDisplay();
+        }
+
+        function renderLogsList() {
+            const container = document.getElementById('emotionListContainer');
+            container.innerHTML = '';
+
+            if (state.logs.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 text-slate-400 text-xs bg-white rounded-2xl border border-rose-100 p-6">
+                        <i class="fa-solid fa-feather text-3xl mb-2 text-rose-200"></i>
+                        <p>尚無情緒感受紀錄，祝願歲月靜好。</p>
+                    </div>
+                `;
+                return;
+            }
+
+            state.logs.forEach(log => {
+                const userBadge = log.user === 'Me' 
+                    ? `<span class="bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded text-[10px]">秋刀魚</span>`
+                    : `<span class="bg-pink-100 text-pink-700 font-bold px-2 py-0.5 rounded text-[10px]">白鯧魚</span>`;
+
+                const timeStr = new Date(log.timestamp).toLocaleString('zh-TW', {
+                    month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+                });
+
+                const tagsHtml = (log.tags || []).map(t => 
+                    `<span class="bg-rose-50 text-rose-600 px-2 py-0.5 rounded text-[10px] font-medium border border-rose-100"># ${t}</span>`
+                ).join(' ');
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-3.5 rounded-2xl border border-rose-100 shadow-2xs space-y-2 relative";
+                card.innerHTML = `
+                    <div class="flex justify-between items-center border-b border-rose-50 pb-2">
+                        <div class="flex items-center gap-1.5">
+                            ${userBadge}
+                            <span class="text-[11px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i>${timeStr}</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <span class="text-[10px] text-rose-600 font-semibold bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100">
+                                失望 ${log.disappointment} 分
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-medium bg-slate-50 px-1.5 py-0.5 rounded">
+                                <i class="fa-solid fa-lock text-[9px] mr-1"></i>已留存
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5 text-xs">
+                        <div>
+                            <span class="text-slate-400 font-medium block text-[10px]">事件簡述:</span>
+                            <p class="text-slate-800 leading-snug font-medium">${escapeHtml(log.event)}</p>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 font-medium block text-[10px]">我的感受:</span>
+                            <p class="text-slate-700 leading-snug bg-rose-50/40 p-2 rounded-xl border border-rose-100/40">${escapeHtml(log.feelings)}</p>
+                        </div>
+                        ${log.needs ? `
+                            <div>
+                                <span class="text-slate-400 font-medium block text-[10px]">希望對方知道:</span>
+                                <p class="text-rose-900 bg-pink-50/50 p-2 rounded-xl border border-pink-100/50">${escapeHtml(log.needs)}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    ${tagsHtml ? `<div class="pt-1 flex flex-wrap gap-1">${tagsHtml}</div>` : ''}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderMuyuList() {
+            const container = document.getElementById('muyuListContainer');
+            container.innerHTML = '';
+
+            let totalMe = 0;
+            let totalPartner = 0;
+
+            state.misses.forEach(m => {
+                if (m.user === 'Me') totalMe += (m.count || 1);
+                else totalPartner += (m.count || 1);
+            });
+
+            document.getElementById('muyuTotalMe').innerText = `${totalMe} 次`;
+            document.getElementById('muyuTotalPartner').innerText = `${totalPartner} 次`;
+            document.getElementById('muyuTotalBatches').innerText = `${state.misses.length} 筆`;
+
+            if (state.misses.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs bg-white rounded-2xl border border-rose-100">尚無想念紀錄，點擊木魚累積愛意。</div>`;
+                return;
+            }
+
+            state.misses.forEach(m => {
+                const userText = m.user === 'Me' ? '你' : '女友';
+                const userClass = m.user === 'Me' ? 'text-rose-600 font-bold' : 'text-pink-600 font-bold';
+                const timeStr = new Date(m.timestamp).toLocaleString('zh-TW', {
+                    month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+                });
+
+                const row = document.createElement('div');
+                row.className = "flex justify-between items-center bg-white px-3.5 py-2 rounded-xl border border-rose-100 text-xs shadow-2xs";
+                row.innerHTML = `
+                    <div class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-heart text-rose-500"></i>
+                        <span class="${userClass}">${userText}</span>
+                        <span class="text-slate-400 text-[10px]">${timeStr}</span>
+                    </div>
+                    <div class="font-extrabold text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full text-[11px]">
+                        敲擊 ${m.count} 下
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function renderStatsChart() {
+            let maxCalmMs = Date.now() - state.lastResetTimestamp;
+            
+            const sortedLogs = [...state.logs].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            for (let i = 1; i < sortedLogs.length; i++) {
+                const diff = new Date(sortedLogs[i].timestamp) - new Date(sortedLogs[i-1].timestamp);
+                if (diff > maxCalmMs) maxCalmMs = diff;
+            }
+
+            const days = Math.floor(maxCalmMs / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((maxCalmMs / (1000 * 60 * 60)) % 24);
+            document.getElementById('statMaxCalm').innerText = `${days}天 ${hours}小時`;
+
+            const totalMiss = state.misses.reduce((acc, curr) => acc + (curr.count || 1), 0);
+            document.getElementById('statTotalMissCount').innerText = `${totalMiss} 次`;
+
+            const tagCounts = {};
+            PRESET_TAGS.forEach(t => tagCounts[t] = 0);
+
+            state.logs.forEach(log => {
+                if (Array.isArray(log.tags)) {
+                    log.tags.forEach(t => {
+                        tagCounts[t] = (tagCounts[t] || 0) + 1;
+                    });
+                }
+            });
+
+            const ctx = document.getElementById('tagsChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(tagCounts),
+                    datasets: [{
+                        label: '出現次數',
+                        data: Object.values(tagCounts),
+                        backgroundColor: '#f43f5e',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } },
+                        x: { ticks: { font: { size: 9 } } }
+                    }
+                }
+            });
+        }
+
+        function updateMuyuInterval() {
+            state.muyuInterval = parseInt(document.getElementById('muyuIntervalSelect').value);
+            const intervalSec = state.muyuInterval / 1000;
+            const textEl = document.getElementById('intervalBatchText');
+            if (textEl) textEl.innerText = intervalSec;
+            saveLocalState();
+        }
+
+        async function syncWithGas() {
+            const textEl = document.getElementById('syncStatusText');
+            textEl.innerHTML = `<i class="fa-solid fa-arrows-rotate animate-spin mr-1"></i> 同步中...`;
+
+            try {
+                const res = await fetch(`${state.gasUrl}?action=readAll`);
+                const json = await res.json();
+
+                if (json.status === 'success') {
+                    if (json.logs) state.logs = json.logs;
+                    if (json.misses) state.misses = json.misses;
+                    
+                    recalculateResetTimeFromLogs();
+                    saveLocalState();
+                    renderAll();
+                    textEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> 同步成功`;
+                } else {
+                    textEl.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 mr-1"></i> 同步失敗`;
+                }
+            } catch(err) {
+                textEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i> 本地模式`;
+            }
+        }
+
+        async function postToGas(payload) {
+            try {
+                await fetch(state.gasUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch(e) {
+                console.error("Post to GAS failed", e);
+            }
+        }
+
+        function confirmClearAllData() {
+            const p1 = confirm("【第一階段確認】您與女友是否已同意清空所有紀錄？");
+            if (!p1) return;
+
+            const p2 = confirm("【第二階段確認】確定要執行嗎？資料無法復原。");
+            if (p2) {
+                state.logs = [];
+                state.misses = [];
+                state.lastResetTimestamp = Date.now();
+                saveLocalState();
+                postToGas({ action: 'clearAll' });
+                renderAll();
+                alert("資料已完全清空！");
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
