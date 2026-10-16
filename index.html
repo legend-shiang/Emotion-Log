@@ -108,7 +108,7 @@
                     </div>
 
                     <div class="text-right">
-                        <span class="text-[10px] text-rose-100 block opacity-80">當前切換</span>
+                        <span class="text-[10px] text-rose-100 block opacity-80">當前身分</span>
                         <span id="currentRoleBadge" class="text-xs font-bold bg-white text-rose-600 px-2.5 py-0.5 rounded-full shadow-xs inline-block">
                             <i class="fa-solid fa-user-ninja mr-1"></i>秋刀魚
                         </span>
@@ -116,11 +116,11 @@
                 </div>
 
                 <!-- Role Selector Pill -->
-                <div class="grid grid-cols-2 bg-black/15 p-1 rounded-2xl border border-white/20 text-xs">
-                    <button id="roleMe" onclick="switchUser('Me')" class="py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1">
+                <div id="roleSelectorContainer" class="grid grid-cols-2 bg-black/15 p-1 rounded-2xl border border-white/20 text-xs relative">
+                    <button id="roleMe" onclick="selectUser('Me')" class="py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1">
                         <i class="fa-solid fa-user-ninja"></i> 秋刀魚
                     </button>
-                    <button id="rolePartner" onclick="switchUser('Partner')" class="py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1">
+                    <button id="rolePartner" onclick="selectUser('Partner')" class="py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1">
                         <i class="fa-solid fa-user-astronaut"></i> 白鯧魚
                     </button>
                 </div>
@@ -247,11 +247,11 @@
                 <div id="tabContentMiss" class="hidden space-y-3">
                     <div class="grid grid-cols-3 gap-2 bg-gradient-to-r from-rose-50 to-pink-50 p-3 rounded-2xl text-center text-xs border border-rose-100">
                         <div>
-                            <span class="text-slate-400 text-[10px] block">你累計</span>
+                            <span class="text-slate-400 text-[10px] block">秋刀魚累計</span>
                             <span id="muyuTotalMe" class="font-extrabold text-rose-600 text-sm">0 次</span>
                         </div>
                         <div>
-                            <span class="text-slate-400 text-[10px] block">女友累計</span>
+                            <span class="text-slate-400 text-[10px] block">白鯧魚累計</span>
                             <span id="muyuTotalPartner" class="font-extrabold text-pink-600 text-sm">0 次</span>
                         </div>
                         <div>
@@ -301,6 +301,25 @@
             </section>
 
             <section id="sec-settings" class="hidden space-y-4">
+                <!-- User Lock Identity Box -->
+                <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-2xs space-y-3">
+                    <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5 border-b border-rose-50 pb-2.5">
+                        <i class="fa-solid fa-user-lock text-rose-500"></i> 登入身分管理
+                    </h3>
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-600">當前鎖定身分：</span>
+                        <span id="settingsUserStatus" class="font-bold text-rose-600 bg-rose-50 border border-rose-200 px-3 py-1 rounded-full">
+                            秋刀魚
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 leading-relaxed">
+                        為避免記錄時發生錯用他人身分，當前人物已固定於此裝置。若確實需要換人操作，請點擊下方重置按鈕。
+                    </p>
+                    <button onclick="resetUserIdentity()" class="w-full py-2 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 text-xs font-semibold rounded-xl border border-slate-200 hover:border-rose-200 transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-right-from-bracket"></i> 重新選擇 / 切換登入身分
+                    </button>
+                </div>
+
                 <!-- Manual Cloud Sync Trigger Box -->
                 <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-2xs space-y-3">
                     <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5 border-b border-rose-50 pb-2.5">
@@ -331,7 +350,7 @@
                     </div>
                 </div>
 
-                <!-- Rich Romantic Communication Rules & Reminders -->
+                <!-- Communication Rules & Reminders -->
                 <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-2xs space-y-3">
                     <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5 border-b border-rose-50 pb-2.5">
                         <i class="fa-solid fa-heart-circle-bolt text-rose-500"></i> 雙方溝通與相處約定叮嚀
@@ -455,7 +474,7 @@
         const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbyTuCrI0GTnWn6taCAhaht7aKiTasKiN6f2QFdr4YX3wh_XqWI4oB3pmy8SyVSIzv5J/exec";
 
         let state = {
-            currentUser: 'Me',
+            currentUser: null, // Null indicates unchosen state
             muyuInterval: 10000,
             gasUrl: DEFAULT_GAS_URL,
             lastResetTimestamp: Date.now(),
@@ -472,8 +491,14 @@
         let chartInstance = null;
         let timerInterval = null;
 
-        function switchUser(role) {
+        function selectUser(role) {
+            // If already locked, do not allow changing
+            if (state.currentUser && state.currentUser !== role) {
+                return;
+            }
+
             state.currentUser = role;
+            localStorage.setItem('app_locked_user', role);
             updateUserRoleUI();
         }
 
@@ -482,23 +507,47 @@
             const formUserTag = document.getElementById('formUserTag');
             const btnMe = document.getElementById('roleMe');
             const btnPartner = document.getElementById('rolePartner');
+            const settingsUserStatus = document.getElementById('settingsUserStatus');
+
+            if (!state.currentUser) {
+                // Not chosen yet
+                badge.innerHTML = `<i class="fa-solid fa-circle-question mr-1"></i>尚未選擇`;
+                badge.className = "text-xs font-bold bg-white/20 text-white px-2.5 py-0.5 rounded-full shadow-xs inline-block";
+                
+                btnMe.className = "py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1 bg-white/20 text-white hover:bg-white/30 cursor-pointer";
+                btnPartner.className = "py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1 bg-white/20 text-white hover:bg-white/30 cursor-pointer";
+                
+                if (formUserTag) formUserTag.innerText = "未登入";
+                if (settingsUserStatus) settingsUserStatus.innerText = "未選擇人物";
+                return;
+            }
 
             if (state.currentUser === 'Me') {
-                badge.innerHTML = `<i class="fa-solid fa-user-ninja mr-1"></i>秋刀魚`;
+                badge.innerHTML = `<i class="fa-solid fa-user-ninja mr-1"></i>秋刀魚 <i class="fa-solid fa-lock text-[9px] ml-0.5"></i>`;
                 badge.className = "text-xs font-bold bg-white text-rose-600 px-2.5 py-0.5 rounded-full shadow-xs inline-block";
                 
-                btnMe.className = "py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1 bg-white text-rose-600 shadow-xs";
-                btnPartner.className = "py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1 text-white/80 hover:text-white";
+                btnMe.className = "py-1.5 rounded-xl font-bold transition-all duration-200 flex items-center justify-center gap-1 bg-white text-rose-600 shadow-xs cursor-default";
+                btnPartner.className = "py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1 text-white/40 cursor-not-allowed opacity-50";
                 
                 if (formUserTag) formUserTag.innerText = "秋刀魚";
+                if (settingsUserStatus) settingsUserStatus.innerText = "秋刀魚 (已鎖定)";
             } else {
-                badge.innerHTML = `<i class="fa-solid fa-user-astronaut mr-1"></i>白鯧魚`;
+                badge.innerHTML = `<i class="fa-solid fa-user-astronaut mr-1"></i>白鯧魚 <i class="fa-solid fa-lock text-[9px] ml-0.5"></i>`;
                 badge.className = "text-xs font-bold bg-white text-pink-600 px-2.5 py-0.5 rounded-full shadow-xs inline-block";
                 
-                btnMe.className = "py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1 text-white/80 hover:text-white";
-                btnPartner.className = "py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1 bg-white text-pink-600 shadow-xs";
+                btnMe.className = "py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1 text-white/40 cursor-not-allowed opacity-50";
+                btnPartner.className = "py-1.5 rounded-xl font-bold transition-all duration-200 flex items-center justify-center gap-1 bg-white text-pink-600 shadow-xs cursor-default";
                 
                 if (formUserTag) formUserTag.innerText = "白鯧魚";
+                if (settingsUserStatus) settingsUserStatus.innerText = "白鯧魚 (已鎖定)";
+            }
+        }
+
+        function resetUserIdentity() {
+            if (confirm("確定要登出當前人物身分嗎？\n登出後可重新選擇登入為『秋刀魚』或『白鯧魚』。")) {
+                state.currentUser = null;
+                localStorage.removeItem('app_locked_user');
+                updateUserRoleUI();
             }
         }
 
@@ -591,7 +640,6 @@
         window.onload = function() {
             loadLocalState();
             setupTagChips();
-            updateUserRoleUI();
             startTimer();
             syncWithGas();
         };
@@ -606,6 +654,13 @@
         }
 
         function loadLocalState() {
+            // Load persistent locked user identity
+            const savedUser = localStorage.getItem('app_locked_user');
+            if (savedUser) {
+                state.currentUser = savedUser;
+            }
+            updateUserRoleUI();
+
             const saved = localStorage.getItem('app_emotion_state');
             if (saved) {
                 try {
@@ -652,6 +707,11 @@
         }
 
         function handleMuyuClick() {
+            if (!state.currentUser) {
+                alert("請先選擇並鎖定您的身分（秋刀魚或白鯧魚）後再敲擊木魚。");
+                return;
+            }
+
             playMuyuSound();
             spawnFloatHeart();
 
@@ -729,6 +789,10 @@
         }
 
         function openLogModal() {
+            if (!state.currentUser) {
+                alert("請先選擇並鎖定您的身分（秋刀魚或白鯧魚）後再記錄感受。");
+                return;
+            }
             document.getElementById('logForm').reset();
             setupTagChips();
             document.getElementById('disapVal').innerText = 3;
@@ -741,6 +805,11 @@
 
         function handleLogFormSubmit(e) {
             e.preventDefault();
+
+            if (!state.currentUser) {
+                alert("未登入身分，無法送出日誌。");
+                return;
+            }
 
             const eventVal = document.getElementById('logEvent').value;
             const feelingsVal = document.getElementById('logFeelings').value;
@@ -871,7 +940,7 @@
             }
 
             state.misses.forEach(m => {
-                const userText = m.user === 'Me' ? '你' : '女友';
+                const userText = m.user === 'Me' ? '秋刀魚' : '白鯧魚';
                 const userClass = m.user === 'Me' ? 'text-rose-600 font-bold' : 'text-pink-600 font-bold';
                 const timeStr = new Date(m.timestamp).toLocaleString('zh-TW', {
                     month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
