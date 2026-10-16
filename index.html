@@ -2,8 +2,9 @@
 <html lang="zh-TW" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
+    <!-- Disable user scaling to prevent page zoom on rapid tapping -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>情緒記錄鐘</title>
+    <title>情緒記錄與想念計數工具</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -36,11 +37,24 @@
         }
     </script>
     <style>
+        * {
+            /* Prevent unwanted text selection during quick tap */
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        input, textarea {
+            -webkit-user-select: text;
+            user-select: text;
+        }
         body {
             -webkit-tap-highlight-color: transparent;
+            /* Disable pinch-zoom and double-tap zoom gestures across page */
+            touch-action: manipulation;
         }
         .muyu-btn {
             transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.15s ease;
+            /* Explicitly disable touch zooming/gestures on the button */
+            touch-action: manipulation;
         }
         .muyu-btn:active {
             transform: scale(0.88);
@@ -121,7 +135,6 @@
 
         <main class="flex-1 p-4 space-y-4 overflow-y-auto">
             
-            <!-- SECTION 1: Home View -->
             <section id="sec-home" class="space-y-4">
                 
                 <!-- Database Driven Calm Timer Widget -->
@@ -361,16 +374,6 @@
                             </div>
                         </li>
                     </ul>
-                </div>
-
-                <div class="bg-rose-50 p-4 rounded-2xl border border-rose-200/60 space-y-2">
-                    <h3 class="text-xs font-bold text-rose-800 flex items-center gap-1">
-                        <i class="fa-solid fa-triangle-exclamation"></i> 危險區域
-                    </h3>
-                    <p class="text-[11px] text-rose-600">需要雙方口頭同意後執行，將清除所有紀錄。</p>
-                    <button onclick="confirmClearAllData()" class="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl transition">
-                        一鍵清空所有資料
-                    </button>
                 </div>
             </section>
 
@@ -985,22 +988,6 @@
                 });
             } catch(e) {
                 console.error("Post to GAS failed", e);
-            }
-        }
-
-        function confirmClearAllData() {
-            const p1 = confirm("【第一階段確認】您與女友是否已同意清空所有紀錄？");
-            if (!p1) return;
-
-            const p2 = confirm("【第二階段確認】確定要執行嗎？資料無法復原。");
-            if (p2) {
-                state.logs = [];
-                state.misses = [];
-                state.lastResetTimestamp = Date.now();
-                saveLocalState();
-                postToGas({ action: 'clearAll' });
-                renderAll();
-                alert("資料已完全清空！");
             }
         }
 
