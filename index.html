@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="zh-TW" class="h-full bg-slate-50">
+<html lang="zh-TW" class="h-full bg-rose-50/30">
 <head>
     <meta charset="UTF-8">
-    <!-- Disable user scaling to prevent page zoom on rapid tapping -->
+    <!-- Mobile optimization: disable pinch/double tap zoom -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>情緒記錄與想念計數工具</title>
     <!-- Tailwind CSS -->
@@ -38,7 +38,6 @@
     </script>
     <style>
         * {
-            /* Prevent unwanted text selection during quick tap */
             -webkit-user-select: none;
             user-select: none;
         }
@@ -48,12 +47,10 @@
         }
         body {
             -webkit-tap-highlight-color: transparent;
-            /* Disable pinch-zoom and double-tap zoom gestures across page */
             touch-action: manipulation;
         }
         .muyu-btn {
             transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.15s ease;
-            /* Explicitly disable touch zooming/gestures on the button */
             touch-action: manipulation;
         }
         .muyu-btn:active {
@@ -69,10 +66,19 @@
         }
         @keyframes subtlePulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.03); }
+            50% { transform: scale(1.04); }
         }
         .animate-heart-beat {
             animation: subtlePulse 2.5s infinite ease-in-out;
+        }
+        /* Unfold Love Letter Animation */
+        @keyframes openEnvelope {
+            0% { transform: scale(0.8) rotate(-3deg); opacity: 0; }
+            50% { transform: scale(1.03) rotate(1deg); opacity: 0.9; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .animate-open-letter {
+            animation: openEnvelope 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
         ::-webkit-scrollbar {
             width: 4px;
@@ -90,54 +96,44 @@
 <body class="h-full text-slate-800 flex flex-col font-sans bg-rose-50/50 antialiased selection:bg-rose-200">
     <div id="app" class="flex-1 flex flex-col max-w-md w-full mx-auto bg-white/90 backdrop-blur-md shadow-2xl min-h-screen border-x border-rose-100/60 pb-20">
         
-        <!-- Header & Role Selector Toggle -->
-        <header class="bg-gradient-to-r from-rose-600 via-pink-600 to-rose-500 text-white p-4 sticky top-0 z-30 shadow-md rounded-b-3xl">
-            <div class="flex flex-col gap-3">
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center space-x-2.5">
-                        <div class="w-9 h-9 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white shadow-inner animate-heart-beat">
-                            <i class="fa-solid fa-heart text-lg"></i>
-                        </div>
-                        <div>
-                            <h1 class="text-base font-bold tracking-wide flex items-center gap-1.5">
-                                雙人相處陪伴簿
-                                <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-normal">Love Notes</span>
-                            </h1>
-                            <p class="text-[11px] text-rose-100/90 font-light">傾聽真實感受 • 累積溫柔思念</p>
-                        </div>
+        <!-- Header (Unfrozen for larger view area) -->
+        <header class="bg-gradient-to-r from-rose-600 via-pink-600 to-rose-500 text-white p-4 z-10 shadow-md rounded-b-3xl">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white shadow-inner animate-heart-beat">
+                        <i class="fa-solid fa-heart text-lg"></i>
                     </div>
-
-                    <div class="text-right">
-                        <span class="text-[10px] text-rose-100 block opacity-80">當前身分</span>
-                        <span id="currentRoleBadge" class="text-xs font-bold bg-white text-rose-600 px-2.5 py-0.5 rounded-full shadow-xs inline-block">
-                            <i class="fa-solid fa-user-ninja mr-1"></i>秋刀魚
-                        </span>
+                    <div>
+                        <h1 class="text-base font-bold tracking-wide flex items-center gap-1.5">
+                            雙人相處陪伴簿
+                            <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-normal">Love Notes</span>
+                        </h1>
+                        <p class="text-[11px] text-rose-100/90 font-light">傾聽真實感受 • 累積溫柔思念</p>
                     </div>
                 </div>
 
-                <!-- Role Selector Pill -->
-                <div id="roleSelectorContainer" class="grid grid-cols-2 bg-black/15 p-1 rounded-2xl border border-white/20 text-xs relative">
-                    <button id="roleMe" onclick="selectUser('Me')" class="py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1">
-                        <i class="fa-solid fa-user-ninja"></i> 秋刀魚
-                    </button>
-                    <button id="rolePartner" onclick="selectUser('Partner')" class="py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1">
-                        <i class="fa-solid fa-user-astronaut"></i> 白鯧魚
-                    </button>
+                <!-- Identity Badge -->
+                <div class="text-right">
+                    <span class="text-[10px] text-rose-100 block opacity-80">當前身分</span>
+                    <span id="currentRoleBadge" class="text-xs font-bold bg-white text-rose-600 px-2.5 py-0.5 rounded-full shadow-xs inline-block">
+                        <i class="fa-solid fa-lock text-[10px] mr-1"></i> 未驗證
+                    </span>
                 </div>
             </div>
         </header>
 
-        <!-- Dynamic Status Banner -->
+        <!-- Cloud Sync Status Banner -->
         <div id="syncStatusBanner" class="bg-rose-50 border-b border-rose-100 px-4 py-1.5 text-[11px] text-rose-800 flex justify-between items-center">
-            <span id="syncStatusText"><i class="fa-solid fa-arrows-rotate animate-spin mr-1"></i> 雲端連線中...</span>
+            <span id="syncStatusText"><i class="fa-solid fa-cloud-check mr-1 text-emerald-600"></i> Google Sheets 連線準備就緒</span>
             <span class="bg-rose-200/80 text-rose-900 text-[10px] px-2 py-0.5 rounded-full font-semibold">Google Sheets Sync</span>
         </div>
 
         <main class="flex-1 p-4 space-y-4 overflow-y-auto">
             
+            <!-- SECTION: HOME -->
             <section id="sec-home" class="space-y-4">
                 
-                <!-- Database Driven Calm Timer Widget -->
+                <!-- Calm Timer Widget -->
                 <div class="bg-gradient-to-br from-slate-900 via-rose-950 to-pink-950 text-white rounded-3xl p-5 shadow-xl relative overflow-hidden border border-rose-900/30">
                     <div class="absolute -right-6 -bottom-6 opacity-10 text-8xl text-rose-300 pointer-events-none">
                         <i class="fa-solid fa-heart-pulse"></i>
@@ -148,7 +144,7 @@
                             平穩陪伴時光
                         </span>
                         <span class="text-[10px] text-rose-200/80 bg-white/10 px-2.5 py-1 rounded-lg border border-white/10">
-                            <i class="fa-solid fa-database mr-1"></i>雲端資料庫精確計時
+                            <i class="fa-solid fa-database mr-1"></i>雲端精確計時
                         </span>
                     </div>
 
@@ -156,47 +152,71 @@
                         <div id="timerDisplay" class="font-mono text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-pink-100 to-amber-200">
                             00天 00時 00分 00秒
                         </div>
-                        <p class="text-[10px] text-rose-200/70 mt-1.5 font-light">依據試算表最新情緒日誌時間起算 • 想念按鈕不影響計時</p>
+                        <p class="text-[10px] text-rose-200/70 mt-1.5 font-light">依據最新情緒日誌時間起算 • 想念按鈕不影響計時</p>
                     </div>
                 </div>
 
                 <!-- Action View Toggle Tabs -->
                 <div class="bg-rose-100/60 p-1 rounded-2xl flex border border-rose-200 text-xs font-semibold">
                     <button id="actionTabMiss" onclick="switchActionTab('miss')" class="flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-rose-700 bg-white shadow-xs">
-                        <i class="fa-solid fa-drum text-rose-500"></i> 思念叩擊 (按按鈕)
+                        <i class="fa-solid fa-drum text-rose-500"></i> 思念與閃光點 (叩擊/情書)
                     </button>
                     <button id="actionTabLog" onclick="switchActionTab('log')" class="flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-500 hover:text-rose-700">
                         <i class="fa-solid fa-feather-pointed text-pink-500"></i> 感受紀錄 (寫日誌)
                     </button>
                 </div>
 
-                <!-- TAB A: Woodblock Muyu Screen -->
-                <div id="actionViewMiss" class="bg-gradient-to-br from-rose-50 via-pink-50/50 to-orange-50/30 rounded-3xl p-5 border border-rose-200/80 shadow-sm flex flex-col items-center justify-between min-h-[310px] relative overflow-hidden">
-                    <div class="w-full text-center">
-                        <div class="inline-block px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-[11px] font-medium mb-1">
-                            <i class="fa-solid fa-sparkles mr-1 text-amber-500"></i><span id="intervalBatchText">10</span> 秒自動歸併為一筆記錄
-                        </div>
-                        <p class="text-xs text-rose-600/80 font-light">此刻想起對方時按按鈕，將無聲思念化為溫柔的痕跡</p>
-                    </div>
-
-                    <!-- Woodblock Muyu Button -->
-                    <div class="my-6 flex flex-col items-center justify-center relative w-full">
-                        <div id="muyuFloatContainer" class="absolute inset-0 pointer-events-none flex justify-center items-center"></div>
-                        
-                        <button id="muyuBtn" onclick="handleMuyuClick()" class="muyu-btn relative w-36 h-36 rounded-full bg-gradient-to-tr from-rose-500 via-pink-500 to-rose-400 hover:from-rose-600 hover:to-pink-600 text-white font-bold shadow-xl shadow-rose-300/60 flex flex-col items-center justify-center border-4 border-white group cursor-pointer active:scale-90 transition-all">
-                            <div class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
-                                <i class="fa-solid fa-heart text-3xl text-white"></i>
+                <!-- TAB A: Woodblock Muyu & Love Letters View -->
+                <div id="actionViewMiss" class="space-y-4">
+                    
+                    <!-- Woodblock Muyu Card -->
+                    <div class="bg-gradient-to-br from-rose-50 via-pink-50/50 to-orange-50/30 rounded-3xl p-5 border border-rose-200/80 shadow-sm flex flex-col items-center justify-between min-h-[290px] relative overflow-hidden">
+                        <div class="w-full text-center">
+                            <div class="inline-block px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-[11px] font-medium mb-1">
+                                <i class="fa-solid fa-sparkles mr-1 text-amber-500"></i>5 秒自動歸併為一筆記錄
                             </div>
-                            <span class="text-xs font-bold tracking-wider text-rose-50">想你</span>
-                        </button>
+                            <p class="text-xs text-rose-600/80 font-light">此刻想起對方時按按鈕，將無聲思念化為溫柔的痕跡</p>
+                        </div>
+
+                        <!-- Woodblock Button -->
+                        <div class="my-5 flex flex-col items-center justify-center relative w-full">
+                            <div id="muyuFloatContainer" class="absolute inset-0 pointer-events-none flex justify-center items-center"></div>
+                            
+                            <button id="muyuBtn" onclick="handleMuyuClick()" class="muyu-btn relative w-36 h-36 rounded-full bg-gradient-to-tr from-rose-500 via-pink-500 to-rose-400 hover:from-rose-600 hover:to-pink-600 text-white font-bold shadow-xl shadow-rose-300/60 flex flex-col items-center justify-center border-4 border-white group cursor-pointer active:scale-90 transition-all">
+                                <div class="w-13 h-13 bg-white/20 rounded-full flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                                    <i class="fa-solid fa-heart text-3xl text-white"></i>
+                                </div>
+                                <span class="text-xs font-bold tracking-wider text-rose-50">想你</span>
+                            </button>
+                        </div>
+
+                        <div class="w-full text-center text-xs text-rose-800 bg-white/80 py-2 px-4 rounded-2xl border border-rose-200/60 shadow-2xs">
+                            當前連擊批次：<span id="currentBatchCount" class="font-extrabold text-rose-600 text-base">0</span> 次
+                        </div>
                     </div>
 
-                    <div class="w-full text-center text-xs text-rose-800 bg-white/80 py-2.5 px-4 rounded-2xl border border-rose-200/60 shadow-2xs">
-                        當前連擊批次：<span id="currentBatchCount" class="font-extrabold text-rose-600 text-base">0</span> 次
+                    <!-- Love Letters / Spark Moments Section -->
+                    <div class="bg-white rounded-3xl p-4 border border-rose-100 shadow-xs space-y-3">
+                        <div class="flex justify-between items-center border-b border-rose-100 pb-2.5">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                                    <i class="fa-solid fa-envelope-open-text text-rose-500"></i> 閃光點與甜蜜情書
+                                </h3>
+                                <p class="text-[10px] text-slate-400">寫下欣賞對方的瞬間，只顯示對方寄給你的信</p>
+                            </div>
+                            <button onclick="openWriteLetterModal()" class="px-3 py-1.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-xl text-[11px] font-semibold shadow-xs hover:opacity-95 transition flex items-center gap-1">
+                                <i class="fa-solid fa-pen-fancy"></i> 寫情書給對方
+                            </button>
+                        </div>
+
+                        <!-- Mailbox Container -->
+                        <div id="loveLettersContainer" class="space-y-2 max-h-56 overflow-y-auto pr-0.5">
+                            <!-- Dynamic Injection -->
+                        </div>
                     </div>
                 </div>
 
-                <!-- TAB B: Emotion Form Entry Screen -->
+                <!-- TAB B: Emotion Entry Form -->
                 <div id="actionViewLog" class="hidden bg-white rounded-3xl p-5 border border-pink-100 shadow-sm space-y-4">
                     <div class="flex justify-between items-center border-b border-rose-100 pb-3">
                         <div>
@@ -210,8 +230,8 @@
 
                     <div class="p-3 bg-rose-50/50 rounded-2xl border border-rose-100/60 text-xs space-y-1.5">
                         <div class="flex justify-between text-slate-600">
-                            <span>紀錄身分：</span>
-                            <span id="formUserTag" class="font-bold text-rose-600">秋刀魚</span>
+                            <span>當前發布身分：</span>
+                            <span id="formUserTag" class="font-bold text-rose-600">載入中</span>
                         </div>
                         <div class="flex justify-between text-slate-500 text-[11px]">
                             <span>表達原則：</span>
@@ -226,6 +246,7 @@
 
             </section>
 
+            <!-- SECTION: LOGS LIST -->
             <section id="sec-logs" class="hidden space-y-4">
                 <div class="flex bg-rose-100/60 p-1 rounded-2xl text-xs font-medium text-center border border-rose-200">
                     <button id="tabBtnLog" onclick="switchLogTab('emotion')" class="flex-1 py-2.5 rounded-xl font-bold transition-all text-rose-700 bg-white shadow-xs flex items-center justify-center gap-1.5">
@@ -243,15 +264,15 @@
                     </div>
                 </div>
 
-                <!-- Muyu Logs List -->
+                <!-- Woodblock Logs List -->
                 <div id="tabContentMiss" class="hidden space-y-3">
                     <div class="grid grid-cols-3 gap-2 bg-gradient-to-r from-rose-50 to-pink-50 p-3 rounded-2xl text-center text-xs border border-rose-100">
                         <div>
-                            <span class="text-slate-400 text-[10px] block">秋刀魚累計</span>
+                            <span id="statNameMe" class="text-slate-400 text-[10px] block">秋刀魚累計</span>
                             <span id="muyuTotalMe" class="font-extrabold text-rose-600 text-sm">0 次</span>
                         </div>
                         <div>
-                            <span class="text-slate-400 text-[10px] block">白鯧魚累計</span>
+                            <span id="statNamePartner" class="text-slate-400 text-[10px] block">白鯧魚累計</span>
                             <span id="muyuTotalPartner" class="font-extrabold text-pink-600 text-sm">0 次</span>
                         </div>
                         <div>
@@ -266,6 +287,7 @@
                 </div>
             </section>
 
+            <!-- SECTION: STATS -->
             <section id="sec-stats" class="hidden space-y-4">
                 <div class="bg-rose-50 border border-rose-200/80 rounded-2xl p-3.5 text-xs text-rose-900 leading-relaxed flex items-start gap-2.5">
                     <i class="fa-solid fa-shield-heart text-rose-500 text-base mt-0.5"></i>
@@ -289,6 +311,21 @@
                     </div>
                 </div>
 
+                <!-- Romantic Love Letters Summary Stats -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-gradient-to-br from-rose-50 to-pink-50 p-3.5 rounded-2xl border border-rose-100 shadow-2xs">
+                        <span class="text-[11px] text-rose-500 font-medium block"><i class="fa-solid fa-envelope-heart mr-1"></i>累計情書</span>
+                        <div id="statTotalLettersCount" class="text-lg font-black text-rose-600 mt-1">0 封</div>
+                        <p class="text-[10px] text-slate-400 mt-0.5">為彼此寫下的甜蜜閃光點</p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-pink-50 to-amber-50 p-3.5 rounded-2xl border border-rose-100 shadow-2xs">
+                        <span class="text-[11px] text-amber-600 font-medium block"><i class="fa-solid fa-heart-pulse mr-1"></i>心動愛意總數</span>
+                        <div id="statTotalHeartsCount" class="text-lg font-black text-pink-600 mt-1">0 顆心</div>
+                        <p class="text-[10px] text-slate-400 mt-0.5">累積收到的愛心評分</p>
+                    </div>
+                </div>
+
                 <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-2xs space-y-2">
                     <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                         <i class="fa-solid fa-chart-simple text-rose-500"></i> 衝突議題分類歸納
@@ -300,33 +337,34 @@
                 </div>
             </section>
 
+            <!-- SECTION: SETTINGS -->
             <section id="sec-settings" class="hidden space-y-4">
-                <!-- User Lock Identity Box -->
+                <!-- User Status Lock Card -->
                 <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-2xs space-y-3">
                     <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5 border-b border-rose-50 pb-2.5">
                         <i class="fa-solid fa-user-lock text-rose-500"></i> 登入身分管理
                     </h3>
                     <div class="flex items-center justify-between text-xs">
-                        <span class="text-slate-600">當前鎖定身分：</span>
+                        <span class="text-slate-600">當前登入身分：</span>
                         <span id="settingsUserStatus" class="font-bold text-rose-600 bg-rose-50 border border-rose-200 px-3 py-1 rounded-full">
-                            秋刀魚
+                            載入中
                         </span>
                     </div>
                     <p class="text-[11px] text-slate-400 leading-relaxed">
-                        為避免記錄時發生錯用他人身分，當前人物已固定於此裝置。若確實需要換人操作，請點擊下方重置按鈕。
+                        已通過專屬密碼驗證並鎖定在此裝置。若需更換使用者，請點擊下方登出按鈕。
                     </p>
-                    <button onclick="resetUserIdentity()" class="w-full py-2 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 text-xs font-semibold rounded-xl border border-slate-200 hover:border-rose-200 transition flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-right-from-bracket"></i> 重新選擇 / 切換登入身分
+                    <button onclick="logoutUser()" class="w-full py-2 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 text-xs font-semibold rounded-xl border border-slate-200 hover:border-rose-200 transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-right-from-bracket"></i> 登出當前帳號
                     </button>
                 </div>
 
-                <!-- Manual Cloud Sync Trigger Box -->
+                <!-- Manual Cloud Sync Box -->
                 <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-2xs space-y-3">
                     <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5 border-b border-rose-50 pb-2.5">
                         <i class="fa-solid fa-cloud-arrow-up text-emerald-600"></i> Google 試算表雲端資料庫
                     </h3>
                     <p class="text-[11px] text-slate-500 leading-relaxed">
-                        系統已預設連結您的 Google Sheets Web App 雲端後端，保持雙手機能實時同步。
+                        系統已預設連結您的 Google Sheets Web App 雲端後端，保持雙方資料實時同步。
                     </p>
 
                     <button onclick="syncWithGas()" class="w-full py-2.5 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center justify-center gap-1.5">
@@ -334,23 +372,7 @@
                     </button>
                 </div>
 
-                <!-- Muyu Batch Interval Config -->
-                <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-2xs space-y-2">
-                    <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5 border-b border-rose-50 pb-2.5">
-                        <i class="fa-solid fa-clock text-rose-400"></i> 想念點擊批次間隔
-                    </h3>
-                    <div class="flex items-center justify-between">
-                        <label class="text-xs text-slate-600">連擊判定時長：</label>
-                        <select id="muyuIntervalSelect" onchange="updateMuyuInterval()" class="px-3 py-1.5 text-xs border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-400">
-                            <option value="5000">5 秒</option>
-                            <option value="10000" selected>10 秒 (預設)</option>
-                            <option value="15000">15 秒</option>
-                            <option value="30000">30 秒</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Communication Rules & Reminders -->
+                <!-- Relationship Rules & Guidelines -->
                 <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-2xs space-y-3">
                     <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5 border-b border-rose-50 pb-2.5">
                         <i class="fa-solid fa-heart-circle-bolt text-rose-500"></i> 雙方溝通與相處約定叮嚀
@@ -361,7 +383,7 @@
                             <i class="fa-solid fa-seedling text-rose-400 mt-0.5"></i>
                             <div>
                                 <strong class="text-slate-800">1. 紀錄是為了理解，不是爭論對錯：</strong>
-                                本工具旨在記錄個人的內心真實受感，並非法庭裁判。嚴禁以紀錄內容作為對質與指責對方的武器。
+                                本工具旨在記錄個人的內心真實感受，並非法庭裁判。嚴禁以紀錄內容作為對質與指責對方的武器。
                             </div>
                         </li>
                         <li class="flex items-start gap-2">
@@ -388,8 +410,8 @@
                         <li class="flex items-start gap-2">
                             <i class="fa-solid fa-heart-circle-plus text-emerald-400 mt-0.5"></i>
                             <div>
-                                <strong class="text-slate-800">5. 看見衝突，也多看見思念：</strong>
-                                不要讓相處只剩下爭吵。多善用想念木魚表達關注，平衡彼此在日常裡的愛意與陪伴痕跡。
+                                <strong class="text-slate-800">5. 看見衝突，也多看見思念與閃光點：</strong>
+                                多善用想念木魚與甜蜜情書表達關注，平衡彼此在日常裡的愛意與陪伴痕跡。
                             </div>
                         </li>
                     </ul>
@@ -398,10 +420,13 @@
 
         </main>
 
-        <!-- Fixed Bottom Navigation Bar -->
+        <!-- Navigation Bar -->
         <nav class="bg-white/95 backdrop-blur-md border-t border-rose-100 p-2 grid grid-cols-4 gap-1 text-center text-[11px] fixed bottom-0 max-w-md w-full z-40 rounded-t-2xl shadow-lg">
             <button onclick="switchMainNav('home')" id="navHome" class="py-1.5 px-1 text-rose-600 font-bold flex flex-col items-center gap-0.5">
-                <i class="fa-solid fa-house-heart text-base"></i>
+                <div class="relative flex items-center justify-center">
+                    <i class="fa-solid fa-house text-base"></i>
+                    <i class="fa-solid fa-heart text-[8px] text-rose-500 absolute -top-1 -right-1.5"></i>
+                </div>
                 <span>首頁</span>
             </button>
             <button onclick="switchMainNav('logs')" id="navLogs" class="py-1.5 px-1 text-slate-400 hover:text-slate-800 flex flex-col items-center gap-0.5">
@@ -419,10 +444,144 @@
         </nav>
     </div>
 
+    <!-- MODAL 1: Password Login Modal with Connection Status -->
+    <div id="loginModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-xs rounded-3xl shadow-2xl overflow-hidden p-6 text-center space-y-4 border border-rose-100">
+            <div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
+                <i class="fa-solid fa-key"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-slate-800 text-base">雙人專屬密碼登入</h3>
+                <p class="text-xs text-slate-400 mt-1">請輸入您的個人密碼解鎖陪伴簿</p>
+            </div>
+
+            <div class="space-y-3 pt-1">
+                <input type="password" id="loginPasswordInput" placeholder="請輸入密碼 " class="w-full text-center tracking-widest text-sm px-4 py-3 border border-rose-200 rounded-2xl focus:ring-2 focus:ring-rose-400 focus:outline-none">
+                
+                <p id="loginErrorMsg" class="text-xs text-rose-500 font-medium hidden">密碼不正確，請重新輸入</p>
+
+                <button id="loginSubmitBtn" onclick="handlePasswordLogin()" class="w-full py-3 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-bold rounded-2xl text-xs shadow-md shadow-rose-200 transition flex items-center justify-center gap-2">
+                    <span>驗證登入</span>
+                </button>
+            </div>
+
+            <!-- Login Screen Live Connection Status Box -->
+            <div id="loginConnectionBox" class="bg-slate-50 border border-slate-200/80 rounded-2xl p-2.5 text-[11px] text-slate-600 space-y-1">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400">雲端連線狀態：</span>
+                    <span id="loginStatusIndicator" class="font-bold text-emerald-600 flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> 檢測中...
+                    </span>
+                </div>
+                <div class="flex justify-between items-center text-[10px] text-slate-400 pt-1 border-t border-slate-200/50">
+                    <span>Google Sheets Web App</span>
+                    <button onclick="checkBackendConnection()" class="text-rose-600 hover:underline">重新測試</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Compose Love Letter Modal (with Image Upload) -->
+    <div id="letterModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-4 bg-gradient-to-r from-rose-500 to-pink-500 text-white flex justify-between items-center">
+                <h3 class="font-bold text-sm flex items-center gap-1.5">
+                    <i class="fa-solid fa-heart"></i> 撰寫情書 / 閃光點
+                </h3>
+                <button onclick="closeLetterModal()" class="text-rose-100 hover:text-white transition p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="letterForm" onsubmit="handleLetterFormSubmit(event)" class="p-4 overflow-y-auto space-y-3.5 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">看見對方的優點 / 感謝的話 <span class="text-rose-500">*</span></label>
+                    <textarea id="letterContent" required rows="4" placeholder="寫下對方的貼心舉動、令人心動的瞬間或藏在心裡的感謝..." class="w-full px-3 py-2 border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-400 focus:outline-none"></textarea>
+                </div>
+
+                <!-- Romantic Photo Upload Section -->
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1 flex items-center gap-1">
+                        <i class="fa-solid fa-camera text-rose-500"></i> 附上浪漫照片 (選填)
+                        <span class="text-[10px] text-slate-400 font-normal"></span>
+                    </label>
+                    <div class="mt-1 flex items-center gap-3">
+                        <input type="file" id="letterImageInput" accept="image/*" onchange="handleImageSelection(event)" class="hidden">
+                        <button type="button" onclick="document.getElementById('letterImageInput').click()" class="px-3 py-2 bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 rounded-xl font-medium flex items-center gap-1.5 text-xs transition">
+                            <i class="fa-solid fa-image"></i> 選擇相片
+                        </button>
+                        <span id="letterImageName" class="text-[11px] text-slate-400 truncate max-w-[180px]">未選擇照片</span>
+                    </div>
+                    <!-- Image Preview -->
+                    <div id="imagePreviewBox" class="hidden mt-2 relative inline-block border-2 border-rose-200 rounded-2xl overflow-hidden shadow-xs">
+                        <img id="imagePreviewEl" src="" class="h-28 w-auto object-cover">
+                        <button type="button" onclick="clearSelectedImage()" class="absolute top-1 right-1 bg-slate-900/70 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px]">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">心動指數 (1 ~ 5 顆心)</label>
+                    <div class="flex items-center gap-2 pt-1" id="heartRatingContainer">
+                        <button type="button" onclick="setHeartRating(1)" class="text-xl text-rose-500 rating-heart"><i class="fa-solid fa-heart"></i></button>
+                        <button type="button" onclick="setHeartRating(2)" class="text-xl text-rose-500 rating-heart"><i class="fa-solid fa-heart"></i></button>
+                        <button type="button" onclick="setHeartRating(3)" class="text-xl text-rose-500 rating-heart"><i class="fa-solid fa-heart"></i></button>
+                        <button type="button" onclick="setHeartRating(4)" class="text-xl text-rose-500 rating-heart"><i class="fa-solid fa-heart"></i></button>
+                        <button type="button" onclick="setHeartRating(5)" class="text-xl text-rose-500 rating-heart"><i class="fa-solid fa-heart"></i></button>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="closeLetterModal()" class="px-4 py-2 border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50 font-medium">取消</button>
+                    <button type="submit" id="submitLetterBtn" class="px-5 py-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-xl font-semibold shadow-md">秘密送出情書</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Unread Letter Animated Arrival Modal (Lazy Loaded Detail) -->
+    <div id="readLetterModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gradient-to-b from-rose-50 to-white w-full max-w-xs rounded-3xl shadow-2xl border-2 border-rose-200 p-5 text-center space-y-4 animate-open-letter relative overflow-hidden">
+            <div class="w-16 h-16 bg-gradient-to-tr from-rose-500 to-pink-500 text-white rounded-full flex items-center justify-center mx-auto text-3xl shadow-lg animate-heart-beat">
+                <i class="fa-solid fa-envelope-open-text"></i>
+            </div>
+
+            <div>
+                <span class="text-[10px] bg-rose-100 text-rose-700 px-2.5 py-0.5 rounded-full font-bold">收到一封新情書</span>
+                <h3 id="readLetterSenderText" class="font-bold text-slate-800 text-sm mt-1">來自對方的溫柔心意</h3>
+                <div id="readLetterHearts" class="text-rose-500 text-xs mt-1">
+                    <i class="fa-solid fa-heart"></i><i class="fa-solid fa-heart"></i><i class="fa-solid fa-heart"></i>
+                </div>
+            </div>
+
+            <!-- On-demand Loading State & Content Container -->
+            <div id="letterDetailContainer" class="bg-white p-3.5 rounded-2xl border border-rose-100 text-xs text-left max-h-60 overflow-y-auto leading-relaxed shadow-inner min-h-[100px] flex flex-col justify-center">
+                <div id="letterDetailLoading" class="text-center py-4 text-slate-400 text-xs space-y-2">
+                    <i class="fa-solid fa-spinner animate-spin text-rose-500 text-xl block"></i>
+                    <span>讀取情書內容與照片中...</span>
+                </div>
+                
+                <div id="letterDetailBody" class="hidden space-y-3">
+                    <p id="readLetterContentText" class="text-slate-700 whitespace-pre-wrap"></p>
+                    <!-- Lazy Loaded Photo Container -->
+                    <div id="readLetterImageWrapper" class="hidden rounded-xl overflow-hidden border border-rose-200 shadow-2xs">
+                        <img id="readLetterImageEl" src="" class="w-full h-auto object-cover max-h-52">
+                    </div>
+                </div>
+            </div>
+
+            <button id="markReadBtn" onclick="confirmReadCurrentLetter()" class="w-full py-2.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold rounded-xl text-xs shadow-md">
+                收下愛意（標示為已讀）
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 4: Emotion Log Entry Modal -->
     <div id="logModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
         <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
             <div class="p-4 bg-gradient-to-r from-rose-600 to-pink-600 text-white flex justify-between items-center">
-                <h3 id="modalTitle" class="font-bold text-sm flex items-center gap-1.5">
+                <h3 class="font-bold text-sm flex items-center gap-1.5">
                     <i class="fa-solid fa-heart-crack"></i> 新增情緒感受紀錄
                 </h3>
                 <button onclick="closeLogModal()" class="text-rose-100 hover:text-white transition p-1">
@@ -471,11 +630,12 @@
 
     <script>
         const PRESET_TAGS = ["價值觀差異", "溝通語氣", "邊界感與安全感", "生活習慣", "陪伴時間與分配", "承諾與期望落差", "情緒消化方式"];
-        const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbyTuCrI0GTnWn6taCAhaht7aKiTasKiN6f2QFdr4YX3wh_XqWI4oB3pmy8SyVSIzv5J/exec";
+        const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbzojyURdNXuki_VnwZupa97CRA9Ni_t6eP1RADG1uJq00LeArO8exGPnoLRrXCZZVU/exec";
 
         let state = {
-            currentUser: null, // Null indicates unchosen state
-            muyuInterval: 10000,
+            currentUser: null,        // 'Me' or 'Partner'
+            displayName: '',          // '秋刀魚' or '白鯧魚'
+            muyuInterval: 5000,       // 固定 5 秒
             gasUrl: DEFAULT_GAS_URL,
             lastResetTimestamp: Date.now(),
             muyuBatch: {
@@ -485,128 +645,125 @@
                 lastClickTime: 0
             },
             logs: [],
-            misses: []
+            misses: [],
+            letters: [],
+            currentHeartRating: 5,
+            activeReadingLetterId: null,
+            currentImageBase64: ''   // 新增情書壓縮後的照片 Base64
         };
 
         let chartInstance = null;
         let timerInterval = null;
 
-        function selectUser(role) {
-            // If already locked, do not allow changing
-            if (state.currentUser && state.currentUser !== role) {
-                return;
-            }
+        window.onload = function() {
+            loadLocalState();
+            setupTagChips();
+            startTimer();
+            checkBackendConnection();
+            checkUserAuthentication();
+        };
 
-            state.currentUser = role;
-            localStorage.setItem('app_locked_user', role);
-            updateUserRoleUI();
+        async function checkBackendConnection() {
+            const ind = document.getElementById('loginStatusIndicator');
+            if (ind) ind.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 檢測中...`;
+
+            try {
+                const res = await fetch(`${state.gasUrl}?action=readAll`, { redirect: 'follow' });
+                if (res.ok) {
+                    if (ind) ind.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1"></span> 伺服器連線正常`;
+                } else {
+                    if (ind) ind.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 inline-block mr-1"></span> 狀態碼 ${res.status}`;
+                }
+            } catch(e) {
+                if (ind) ind.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500 inline-block mr-1"></span> 連線受阻 / 本地離線`;
+            }
+        }
+
+        function checkUserAuthentication() {
+            const savedUser = localStorage.getItem('app_auth_user');
+            const savedName = localStorage.getItem('app_auth_name');
+
+            if (savedUser && savedName) {
+                state.currentUser = savedUser;
+                state.displayName = savedName;
+                document.getElementById('loginModal').classList.add('hidden');
+                updateUserRoleUI();
+                syncWithGas();
+            } else {
+                document.getElementById('loginModal').classList.remove('hidden');
+            }
+        }
+
+        async function handlePasswordLogin() {
+            const pwdInput = document.getElementById('loginPasswordInput');
+            const errMsg = document.getElementById('loginErrorMsg');
+            const submitBtn = document.getElementById('loginSubmitBtn');
+            const pwd = pwdInput.value.trim();
+
+            if (!pwd) return;
+
+            errMsg.classList.add('hidden');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 驗證中...`;
+            
+            try {
+                const targetUrl = `${state.gasUrl}?action=verifyPassword&password=${encodeURIComponent(pwd)}`;
+                const res = await fetch(targetUrl, { redirect: 'follow' });
+                const json = await res.json();
+
+                if (json.status === 'success') {
+                    state.currentUser = json.userRole;
+                    state.displayName = json.displayName;
+
+                    localStorage.setItem('app_auth_user', json.userRole);
+                    localStorage.setItem('app_auth_name', json.displayName);
+
+                    document.getElementById('loginModal').classList.add('hidden');
+                    updateUserRoleUI();
+                    syncWithGas();
+                } else {
+                    errMsg.innerText = json.message || "密碼不正確，請重新輸入";
+                    errMsg.classList.remove('hidden');
+                }
+            } catch(e) {
+                errMsg.innerText = "驗證請求失敗，請檢查網路或確認試算表部署權限設為「所有人」";
+                errMsg.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<span>驗證登入</span>`;
+            }
+        }
+
+        function logoutUser() {
+            if (confirm("確定要登出當前帳號嗎？")) {
+                localStorage.removeItem('app_auth_user');
+                localStorage.removeItem('app_auth_name');
+                state.currentUser = null;
+                state.displayName = '';
+                document.getElementById('loginModal').classList.remove('hidden');
+            }
         }
 
         function updateUserRoleUI() {
             const badge = document.getElementById('currentRoleBadge');
             const formUserTag = document.getElementById('formUserTag');
-            const btnMe = document.getElementById('roleMe');
-            const btnPartner = document.getElementById('rolePartner');
             const settingsUserStatus = document.getElementById('settingsUserStatus');
 
             if (!state.currentUser) {
-                // Not chosen yet
-                badge.innerHTML = `<i class="fa-solid fa-circle-question mr-1"></i>尚未選擇`;
+                badge.innerHTML = `<i class="fa-solid fa-lock text-[10px] mr-1"></i> 未驗證`;
                 badge.className = "text-xs font-bold bg-white/20 text-white px-2.5 py-0.5 rounded-full shadow-xs inline-block";
-                
-                btnMe.className = "py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1 bg-white/20 text-white hover:bg-white/30 cursor-pointer";
-                btnPartner.className = "py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1 bg-white/20 text-white hover:bg-white/30 cursor-pointer";
-                
-                if (formUserTag) formUserTag.innerText = "未登入";
-                if (settingsUserStatus) settingsUserStatus.innerText = "未選擇人物";
                 return;
             }
 
-            if (state.currentUser === 'Me') {
-                badge.innerHTML = `<i class="fa-solid fa-user-ninja mr-1"></i>秋刀魚 <i class="fa-solid fa-lock text-[9px] ml-0.5"></i>`;
-                badge.className = "text-xs font-bold bg-white text-rose-600 px-2.5 py-0.5 rounded-full shadow-xs inline-block";
-                
-                btnMe.className = "py-1.5 rounded-xl font-bold transition-all duration-200 flex items-center justify-center gap-1 bg-white text-rose-600 shadow-xs cursor-default";
-                btnPartner.className = "py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1 text-white/40 cursor-not-allowed opacity-50";
-                
-                if (formUserTag) formUserTag.innerText = "秋刀魚";
-                if (settingsUserStatus) settingsUserStatus.innerText = "秋刀魚 (已鎖定)";
-            } else {
-                badge.innerHTML = `<i class="fa-solid fa-user-astronaut mr-1"></i>白鯧魚 <i class="fa-solid fa-lock text-[9px] ml-0.5"></i>`;
-                badge.className = "text-xs font-bold bg-white text-pink-600 px-2.5 py-0.5 rounded-full shadow-xs inline-block";
-                
-                btnMe.className = "py-1.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-1 text-white/40 cursor-not-allowed opacity-50";
-                btnPartner.className = "py-1.5 rounded-xl font-bold transition-all duration-200 flex items-center justify-center gap-1 bg-white text-pink-600 shadow-xs cursor-default";
-                
-                if (formUserTag) formUserTag.innerText = "白鯧魚";
-                if (settingsUserStatus) settingsUserStatus.innerText = "白鯧魚 (已鎖定)";
-            }
-        }
+            const isMe = state.currentUser === 'Me';
+            badge.innerHTML = `<i class="fa-solid ${isMe ? 'fa-user-ninja' : 'fa-user-astronaut'} mr-1"></i>${state.displayName}`;
+            badge.className = `text-xs font-bold bg-white ${isMe ? 'text-rose-600' : 'text-pink-600'} px-2.5 py-0.5 rounded-full shadow-xs inline-block`;
 
-        function resetUserIdentity() {
-            if (confirm("確定要登出當前人物身分嗎？\n登出後可重新選擇登入為『秋刀魚』或『白鯧魚』。")) {
-                state.currentUser = null;
-                localStorage.removeItem('app_locked_user');
-                updateUserRoleUI();
-            }
-        }
+            if (formUserTag) formUserTag.innerText = state.displayName;
+            if (settingsUserStatus) settingsUserStatus.innerText = `${state.displayName} (已登入)`;
 
-        function switchActionTab(tab) {
-            const btnMiss = document.getElementById('actionTabMiss');
-            const btnLog = document.getElementById('actionTabLog');
-            const viewMiss = document.getElementById('actionViewMiss');
-            const viewLog = document.getElementById('actionViewLog');
-
-            if (tab === 'miss') {
-                btnMiss.className = "flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-rose-700 bg-white shadow-xs";
-                btnLog.className = "flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-500 hover:text-rose-700";
-                viewMiss.classList.remove('hidden');
-                viewLog.classList.add('hidden');
-            } else {
-                btnLog.className = "flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-rose-700 bg-white shadow-xs";
-                btnMiss.className = "flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-500 hover:text-rose-700";
-                viewLog.classList.remove('hidden');
-                viewMiss.classList.add('hidden');
-            }
-        }
-
-        function switchMainNav(nav) {
-            const navs = ['home', 'logs', 'stats', 'settings'];
-            navs.forEach(n => {
-                const sec = document.getElementById('sec-' + n);
-                const btn = document.getElementById('nav' + n.charAt(0).toUpperCase() + n.slice(1));
-                
-                if (n === nav) {
-                    sec.classList.remove('hidden');
-                    btn.className = "py-1.5 px-1 text-rose-600 font-bold flex flex-col items-center gap-0.5";
-                } else {
-                    sec.classList.add('hidden');
-                    btn.className = "py-1.5 px-1 text-slate-400 hover:text-slate-800 flex flex-col items-center gap-0.5";
-                }
-            });
-
-            if (nav === 'stats') {
-                renderStatsChart();
-            }
-        }
-
-        function switchLogTab(tab) {
-            const btnLog = document.getElementById('tabBtnLog');
-            const btnMiss = document.getElementById('tabBtnMiss');
-            const contentLog = document.getElementById('tabContentLog');
-            const contentMiss = document.getElementById('tabContentMiss');
-
-            if (tab === 'emotion') {
-                btnLog.className = "flex-1 py-2.5 rounded-xl font-bold transition-all text-rose-700 bg-white shadow-xs flex items-center justify-center gap-1.5";
-                btnMiss.className = "flex-1 py-2.5 rounded-xl transition-all text-slate-500 hover:text-rose-700 flex items-center justify-center gap-1.5";
-                contentLog.classList.remove('hidden');
-                contentMiss.classList.add('hidden');
-            } else {
-                btnMiss.className = "flex-1 py-2.5 rounded-xl font-bold transition-all text-rose-700 bg-white shadow-xs flex items-center justify-center gap-1.5";
-                btnLog.className = "flex-1 py-2.5 rounded-xl transition-all text-slate-500 hover:text-rose-700 flex items-center justify-center gap-1.5";
-                contentMiss.classList.remove('hidden');
-                contentLog.classList.add('hidden');
-            }
+            document.getElementById('statNameMe').innerText = (state.currentUser === 'Me' ? state.displayName : '對方') + '累計';
+            document.getElementById('statNamePartner').innerText = (state.currentUser === 'Partner' ? state.displayName : '對方') + '累計';
         }
 
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -632,56 +789,7 @@
 
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.09);
-            } catch(e) {
-                console.log("Audio play error:", e);
-            }
-        }
-
-        window.onload = function() {
-            loadLocalState();
-            setupTagChips();
-            startTimer();
-            syncWithGas();
-        };
-
-        function saveLocalState() {
-            localStorage.setItem('app_emotion_state', JSON.stringify({
-                lastResetTimestamp: state.lastResetTimestamp,
-                muyuInterval: state.muyuInterval,
-                logs: state.logs,
-                misses: state.misses
-            }));
-        }
-
-        function loadLocalState() {
-            // Load persistent locked user identity
-            const savedUser = localStorage.getItem('app_locked_user');
-            if (savedUser) {
-                state.currentUser = savedUser;
-            }
-            updateUserRoleUI();
-
-            const saved = localStorage.getItem('app_emotion_state');
-            if (saved) {
-                try {
-                    const parsed = JSON.parse(saved);
-                    state.lastResetTimestamp = parsed.lastResetTimestamp || Date.now();
-                    state.muyuInterval = parsed.muyuInterval || 10000;
-                    state.logs = parsed.logs || [];
-                    state.misses = parsed.misses || [];
-                } catch(e) {
-                    console.error("Failed to parse local state", e);
-                }
-            }
-        }
-
-        function recalculateResetTimeFromLogs() {
-            if (state.logs && state.logs.length > 0) {
-                const timestamps = state.logs.map(l => new Date(l.timestamp).getTime()).filter(t => !isNaN(t));
-                if (timestamps.length > 0) {
-                    state.lastResetTimestamp = Math.max(...timestamps);
-                }
-            }
+            } catch(e) {}
         }
 
         function startTimer() {
@@ -707,10 +815,7 @@
         }
 
         function handleMuyuClick() {
-            if (!state.currentUser) {
-                alert("請先選擇並鎖定您的身分（秋刀魚或白鯧魚）後再敲擊木魚。");
-                return;
-            }
+            if (!state.currentUser) return;
 
             playMuyuSound();
             spawnFloatHeart();
@@ -772,27 +877,239 @@
             setTimeout(() => el.remove(), 1000);
         }
 
-        function setupTagChips() {
-            const container = document.getElementById('tagOptionsContainer');
-            container.innerHTML = '';
-            PRESET_TAGS.forEach(tag => {
-                const label = document.createElement('label');
-                label.className = 'cursor-pointer select-none';
-                label.innerHTML = `
-                    <input type="checkbox" value="${tag}" class="hidden peer">
-                    <span class="px-2.5 py-1 rounded-lg border border-slate-200 text-[11px] text-slate-600 peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-rose-500 transition inline-block">
-                        ${tag}
-                    </span>
-                `;
-                container.appendChild(label);
+        /* --- 相片選擇與自動壓縮微縮邏輯 --- */
+        function handleImageSelection(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('letterImageName').innerText = file.name;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const img = new Image();
+                img.onload = function() {
+                    // 使用 Canvas 壓縮圖片，長寬限制在 800px 以內
+                    const canvas = document.createElement('canvas');
+                    const maxDim = 800;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxDim) {
+                            height *= maxDim / width;
+                            width = maxDim;
+                        }
+                    } else {
+                        if (height > maxDim) {
+                            width *= maxDim / height;
+                            height = maxDim;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // 轉換為輕量化 JPEG Base64
+                    state.currentImageBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+                    document.getElementById('imagePreviewEl').src = state.currentImageBase64;
+                    document.getElementById('imagePreviewBox').classList.remove('hidden');
+                };
+                img.src = evt.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearSelectedImage() {
+            state.currentImageBase64 = '';
+            document.getElementById('letterImageInput').value = '';
+            document.getElementById('letterImageName').innerText = '未選擇照片';
+            document.getElementById('imagePreviewBox').classList.add('hidden');
+            document.getElementById('imagePreviewEl').src = '';
+        }
+
+        function openWriteLetterModal() {
+            document.getElementById('letterForm').reset();
+            clearSelectedImage();
+            setHeartRating(5);
+            document.getElementById('letterModal').classList.remove('hidden');
+        }
+
+        function closeLetterModal() {
+            document.getElementById('letterModal').classList.add('hidden');
+        }
+
+        function setHeartRating(val) {
+            state.currentHeartRating = val;
+            const buttons = document.querySelectorAll('#heartRatingContainer button');
+            buttons.forEach((btn, idx) => {
+                if (idx < val) {
+                    btn.className = "text-xl text-rose-500 rating-heart";
+                } else {
+                    btn.className = "text-xl text-slate-200 rating-heart";
+                }
             });
         }
 
-        function openLogModal() {
-            if (!state.currentUser) {
-                alert("請先選擇並鎖定您的身分（秋刀魚或白鯧魚）後再記錄感受。");
+        async function handleLetterFormSubmit(e) {
+            e.preventDefault();
+            const content = document.getElementById('letterContent').value.trim();
+            if (!content) return;
+
+            const submitBtn = document.getElementById('submitLetterBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 送出中...`;
+
+            const recipient = state.currentUser === 'Me' ? 'Partner' : 'Me';
+            const newLetter = {
+                id: 'letter_' + Date.now(),
+                sender: state.currentUser,
+                recipient: recipient,
+                letterContent: content,
+                heartbeatRating: state.currentHeartRating,
+                timestamp: new Date().toISOString(),
+                isRead: false,
+                hasImage: !!state.currentImageBase64,
+                imageUrl: state.currentImageBase64 // 即時寫入後端
+            };
+
+            state.letters.unshift(newLetter);
+            saveLocalState();
+
+            await postToGas({ action: 'addLetter', data: newLetter });
+
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `秘密送出情書`;
+
+            closeLetterModal();
+            renderLettersList();
+        }
+
+        function checkUnreadLetters() {
+            if (!state.currentUser) return;
+
+            const unread = state.letters.find(l => 
+                l.recipient === state.currentUser && (!l.isRead || String(l.isRead).toUpperCase() === 'FALSE')
+            );
+
+            if (unread) {
+                openSpecificLetterModal(unread.id);
+            }
+        }
+
+        async function confirmReadCurrentLetter() {
+            if (!state.activeReadingLetterId) return;
+
+            const l = state.letters.find(item => String(item.id) === String(state.activeReadingLetterId));
+            if (l) l.isRead = true;
+
+            saveLocalState();
+            renderLettersList();
+            document.getElementById('readLetterModal').classList.add('hidden');
+
+            postToGas({ action: 'markLetterRead', letterId: state.activeReadingLetterId });
+            state.activeReadingLetterId = null;
+        }
+
+        function renderLettersList() {
+            const container = document.getElementById('loveLettersContainer');
+            container.innerHTML = '';
+
+            const myReceivedLetters = state.letters.filter(l => l.recipient === state.currentUser);
+
+            if (myReceivedLetters.length === 0) {
+                container.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs bg-rose-50/50 rounded-2xl border border-rose-100">信箱裡暫時沒有給您的情書，寫一封給對方吧！</div>`;
                 return;
             }
+
+            myReceivedLetters.forEach((letter, index) => {
+                const senderName = letter.sender === 'Me' ? '秋刀魚' : '白鯧魚';
+                const timeStr = new Date(letter.timestamp).toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+                const isRead = (letter.isRead === true || String(letter.isRead).toUpperCase() === 'TRUE');
+                const letterNumber = myReceivedLetters.length - index;
+                const hasPhoto = letter.hasImage || !!letter.imageUrl;
+
+                let hearts = '';
+                const cnt = parseInt(letter.heartbeatRating || 5);
+                for(let i=0; i<cnt; i++) hearts += '<i class="fa-solid fa-heart text-rose-500"></i>';
+
+                const card = document.createElement('div');
+                card.onclick = () => openSpecificLetterModal(letter.id);
+                card.className = "bg-rose-50/80 hover:bg-rose-100/80 p-3 rounded-2xl border border-rose-200/80 space-y-1.5 text-xs relative cursor-pointer transition active:scale-98 shadow-xs";
+                card.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <span class="font-extrabold text-rose-700 bg-white px-2.5 py-0.5 rounded-full border border-rose-200 shadow-2xs">
+                                第 ${letterNumber} 封情書
+                            </span>
+                            ${hasPhoto ? '<span class="text-[10px] text-pink-600 bg-pink-100 px-1.5 py-0.5 rounded font-semibold"><i class="fa-solid fa-camera mr-0.5"></i>有照片</span>' : ''}
+                            <span class="text-[10px] text-slate-500"><i class="fa-solid fa-user-heart mr-1 text-rose-400"></i>來自 ${senderName}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <div class="text-[10px]">${hearts}</div>
+                            ${isRead ? '<span class="text-[9px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold border border-emerald-200">已讀</span>' : '<span class="text-[9px] text-rose-600 bg-rose-200 px-2 py-0.5 rounded-full font-semibold animate-pulse">新信</span>'}
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center text-[11px] text-slate-500 pt-1">
+                        <span class="text-rose-600/90 font-medium flex items-center gap-1">
+                            <i class="fa-solid fa-envelope-open-text"></i> 點擊拆開閱讀內容與照片...
+                        </span>
+                        <span class="text-[10px] text-slate-400">${timeStr}</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        /* --- 按需延遲加載 (Lazy Loading) 點開情書才獨立載入照片與內文 --- */
+        async function openSpecificLetterModal(letterId) {
+            const letterOverview = state.letters.find(l => String(l.id) === String(letterId));
+            if (!letterOverview) return;
+
+            state.activeReadingLetterId = letterOverview.id;
+            const senderName = letterOverview.sender === 'Me' ? '秋刀魚' : '白鯧魚';
+            document.getElementById('readLetterSenderText').innerText = `來自 ${senderName} 的情書`;
+
+            let hearts = '';
+            const cnt = parseInt(letterOverview.heartbeatRating || 5);
+            for(let i=0; i<cnt; i++) hearts += '<i class="fa-solid fa-heart mr-0.5"></i>';
+            document.getElementById('readLetterHearts').innerHTML = hearts;
+
+            // 1. 先重置並顯示 Loading 狀態
+            document.getElementById('letterDetailLoading').classList.remove('hidden');
+            document.getElementById('letterDetailBody').classList.add('hidden');
+            document.getElementById('readLetterImageWrapper').classList.add('hidden');
+            document.getElementById('readLetterImageEl').src = '';
+            document.getElementById('readLetterModal').classList.remove('hidden');
+
+            // 2. 獨立發出請求，點開時才遠端抓取詳細照片與內容 (Lazy Load)
+            try {
+                const res = await fetch(`${state.gasUrl}?action=getLetterDetail&letterId=${letterOverview.id}`, { redirect: 'follow' });
+                const json = await res.json();
+
+                if (json.status === 'success' && json.letter) {
+                    const detail = json.letter;
+                    document.getElementById('readLetterContentText').innerText = detail.letterContent;
+
+                    if (detail.imageUrl && detail.imageUrl.trim().length > 0) {
+                        document.getElementById('readLetterImageEl').src = detail.imageUrl;
+                        document.getElementById('readLetterImageWrapper').classList.remove('hidden');
+                    }
+                } else {
+                    document.getElementById('readLetterContentText').innerText = letterOverview.letterContent || "讀取內文失敗，請檢查網路連線。";
+                }
+            } catch(e) {
+                document.getElementById('readLetterContentText').innerText = letterOverview.letterContent || "載入失敗，顯示快取預覽。";
+            } finally {
+                // 3. 隱藏 Loading，顯示詳細內容
+                document.getElementById('letterDetailLoading').classList.add('hidden');
+                document.getElementById('letterDetailBody').classList.remove('hidden');
+            }
+        }
+
+        function openLogModal() {
             document.getElementById('logForm').reset();
             setupTagChips();
             document.getElementById('disapVal').innerText = 3;
@@ -805,11 +1122,7 @@
 
         function handleLogFormSubmit(e) {
             e.preventDefault();
-
-            if (!state.currentUser) {
-                alert("未登入身分，無法送出日誌。");
-                return;
-            }
+            if (!state.currentUser) return;
 
             const eventVal = document.getElementById('logEvent').value;
             const feelingsVal = document.getElementById('logFeelings').value;
@@ -846,6 +1159,7 @@
         function renderAll() {
             renderLogsList();
             renderMuyuList();
+            renderLettersList();
             renderStatsChart();
             updateTimerDisplay();
         }
@@ -855,27 +1169,17 @@
             container.innerHTML = '';
 
             if (state.logs.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-10 text-slate-400 text-xs bg-white rounded-2xl border border-rose-100 p-6">
-                        <i class="fa-solid fa-feather text-3xl mb-2 text-rose-200"></i>
-                        <p>尚無情緒感受紀錄，祝願歲月靜好。</p>
-                    </div>
-                `;
+                container.innerHTML = `<div class="text-center py-10 text-slate-400 text-xs bg-white rounded-2xl border border-rose-100 p-6"><i class="fa-solid fa-feather text-3xl mb-2 text-rose-200"></i><p>尚無情緒感受紀錄，祝願歲月靜好。</p></div>`;
                 return;
             }
 
             state.logs.forEach(log => {
-                const userBadge = log.user === 'Me' 
-                    ? `<span class="bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded text-[10px]">秋刀魚</span>`
-                    : `<span class="bg-pink-100 text-pink-700 font-bold px-2 py-0.5 rounded text-[10px]">白鯧魚</span>`;
+                const isMe = log.user === 'Me';
+                const displayName = isMe ? (state.currentUser === 'Me' ? state.displayName : '秋刀魚') : (state.currentUser === 'Partner' ? state.displayName : '白鯧魚');
+                const userBadge = `<span class="${isMe ? 'bg-rose-100 text-rose-700' : 'bg-pink-100 text-pink-700'} font-bold px-2 py-0.5 rounded text-[10px]">${displayName}</span>`;
 
-                const timeStr = new Date(log.timestamp).toLocaleString('zh-TW', {
-                    month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
-                });
-
-                const tagsHtml = (log.tags || []).map(t => 
-                    `<span class="bg-rose-50 text-rose-600 px-2 py-0.5 rounded text-[10px] font-medium border border-rose-100"># ${t}</span>`
-                ).join(' ');
+                const timeStr = new Date(log.timestamp).toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+                const tagsHtml = (log.tags || []).map(t => `<span class="bg-rose-50 text-rose-600 px-2 py-0.5 rounded text-[10px] font-medium border border-rose-100"># ${t}</span>`).join(' ');
 
                 const card = document.createElement('div');
                 card.className = "bg-white p-3.5 rounded-2xl border border-rose-100 shadow-2xs space-y-2 relative";
@@ -935,23 +1239,20 @@
             document.getElementById('muyuTotalBatches').innerText = `${state.misses.length} 筆`;
 
             if (state.misses.length === 0) {
-                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs bg-white rounded-2xl border border-rose-100">尚無想念紀錄，點擊木魚累積愛意。</div>`;
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs bg-white rounded-2xl border border-rose-100">尚無想念紀錄，點擊累積愛意。</div>`;
                 return;
             }
 
             state.misses.forEach(m => {
                 const userText = m.user === 'Me' ? '秋刀魚' : '白鯧魚';
-                const userClass = m.user === 'Me' ? 'text-rose-600 font-bold' : 'text-pink-600 font-bold';
-                const timeStr = new Date(m.timestamp).toLocaleString('zh-TW', {
-                    month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
-                });
+                const timeStr = new Date(m.timestamp).toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
 
                 const row = document.createElement('div');
                 row.className = "flex justify-between items-center bg-white px-3.5 py-2 rounded-xl border border-rose-100 text-xs shadow-2xs";
                 row.innerHTML = `
                     <div class="flex items-center gap-1.5">
                         <i class="fa-solid fa-heart text-rose-500"></i>
-                        <span class="${userClass}">${userText}</span>
+                        <span class="font-bold ${m.user === 'Me' ? 'text-rose-600' : 'text-pink-600'}">${userText}</span>
                         <span class="text-slate-400 text-[10px]">${timeStr}</span>
                     </div>
                     <div class="font-extrabold text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full text-[11px]">
@@ -964,7 +1265,6 @@
 
         function renderStatsChart() {
             let maxCalmMs = Date.now() - state.lastResetTimestamp;
-            
             const sortedLogs = [...state.logs].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
             for (let i = 1; i < sortedLogs.length; i++) {
                 const diff = new Date(sortedLogs[i].timestamp) - new Date(sortedLogs[i-1].timestamp);
@@ -978,14 +1278,18 @@
             const totalMiss = state.misses.reduce((acc, curr) => acc + (curr.count || 1), 0);
             document.getElementById('statTotalMissCount').innerText = `${totalMiss} 次`;
 
+            // Total Letters Count and Total Heart Rating Count
+            const totalLetters = state.letters.length;
+            const totalHearts = state.letters.reduce((acc, curr) => acc + parseInt(curr.heartbeatRating || 5), 0);
+            document.getElementById('statTotalLettersCount').innerText = `${totalLetters} 封`;
+            document.getElementById('statTotalHeartsCount').innerText = `${totalHearts} 顆心`;
+
             const tagCounts = {};
             PRESET_TAGS.forEach(t => tagCounts[t] = 0);
 
             state.logs.forEach(log => {
                 if (Array.isArray(log.tags)) {
-                    log.tags.forEach(t => {
-                        tagCounts[t] = (tagCounts[t] || 0) + 1;
-                    });
+                    log.tags.forEach(t => { tagCounts[t] = (tagCounts[t] || 0) + 1; });
                 }
             });
 
@@ -1015,12 +1319,106 @@
             });
         }
 
-        function updateMuyuInterval() {
-            state.muyuInterval = parseInt(document.getElementById('muyuIntervalSelect').value);
-            const intervalSec = state.muyuInterval / 1000;
-            const textEl = document.getElementById('intervalBatchText');
-            if (textEl) textEl.innerText = intervalSec;
-            saveLocalState();
+        function switchActionTab(tab) {
+            const btnMiss = document.getElementById('actionTabMiss');
+            const btnLog = document.getElementById('actionTabLog');
+            const viewMiss = document.getElementById('actionViewMiss');
+            const viewLog = document.getElementById('actionViewLog');
+
+            if (tab === 'miss') {
+                btnMiss.className = "flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-rose-700 bg-white shadow-xs";
+                btnLog.className = "flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-500 hover:text-rose-700";
+                viewMiss.classList.remove('hidden');
+                viewLog.classList.add('hidden');
+            } else {
+                btnLog.className = "flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-rose-700 bg-white shadow-xs";
+                btnMiss.className = "flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-500 hover:text-rose-700";
+                viewLog.classList.remove('hidden');
+                viewMiss.classList.add('hidden');
+            }
+        }
+
+        function switchMainNav(nav) {
+            ['home', 'logs', 'stats', 'settings'].forEach(n => {
+                const sec = document.getElementById('sec-' + n);
+                const btn = document.getElementById('nav' + n.charAt(0).toUpperCase() + n.slice(1));
+                if (n === nav) {
+                    sec.classList.remove('hidden');
+                    btn.className = "py-1.5 px-1 text-rose-600 font-bold flex flex-col items-center gap-0.5";
+                } else {
+                    sec.classList.add('hidden');
+                    btn.className = "py-1.5 px-1 text-slate-400 hover:text-slate-800 flex flex-col items-center gap-0.5";
+                }
+            });
+            if (nav === 'stats') renderStatsChart();
+        }
+
+        function switchLogTab(tab) {
+            const btnLog = document.getElementById('tabBtnLog');
+            const btnMiss = document.getElementById('tabBtnMiss');
+            const contentLog = document.getElementById('tabContentLog');
+            const contentMiss = document.getElementById('tabContentMiss');
+
+            if (tab === 'emotion') {
+                btnLog.className = "flex-1 py-2.5 rounded-xl font-bold transition-all text-rose-700 bg-white shadow-xs flex items-center justify-center gap-1.5";
+                btnMiss.className = "flex-1 py-2.5 rounded-xl transition-all text-slate-500 hover:text-rose-700 flex items-center justify-center gap-1.5";
+                contentLog.classList.remove('hidden');
+                contentMiss.classList.add('hidden');
+            } else {
+                btnMiss.className = "flex-1 py-2.5 rounded-xl font-bold transition-all text-rose-700 bg-white shadow-xs flex items-center justify-center gap-1.5";
+                btnLog.className = "flex-1 py-2.5 rounded-xl transition-all text-slate-500 hover:text-rose-700 flex items-center justify-center gap-1.5";
+                contentMiss.classList.remove('hidden');
+                contentLog.classList.add('hidden');
+            }
+        }
+
+        function setupTagChips() {
+            const container = document.getElementById('tagOptionsContainer');
+            container.innerHTML = '';
+            PRESET_TAGS.forEach(tag => {
+                const label = document.createElement('label');
+                label.className = 'cursor-pointer select-none';
+                label.innerHTML = `
+                    <input type="checkbox" value="${tag}" class="hidden peer">
+                    <span class="px-2.5 py-1 rounded-lg border border-slate-200 text-[11px] text-slate-600 peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-rose-500 transition inline-block">
+                        ${tag}
+                    </span>
+                `;
+                container.appendChild(label);
+            });
+        }
+
+        function saveLocalState() {
+            localStorage.setItem('app_emotion_state', JSON.stringify({
+                lastResetTimestamp: state.lastResetTimestamp,
+                muyuInterval: state.muyuInterval,
+                logs: state.logs,
+                misses: state.misses,
+                letters: state.letters
+            }));
+        }
+
+        function loadLocalState() {
+            const saved = localStorage.getItem('app_emotion_state');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    state.lastResetTimestamp = parsed.lastResetTimestamp || Date.now();
+                    state.muyuInterval = 5000;
+                    state.logs = parsed.logs || [];
+                    state.misses = parsed.misses || [];
+                    state.letters = parsed.letters || [];
+                } catch(e) {}
+            }
+        }
+
+        function recalculateResetTimeFromLogs() {
+            if (state.logs && state.logs.length > 0) {
+                const timestamps = state.logs.map(l => new Date(l.timestamp).getTime()).filter(t => !isNaN(t));
+                if (timestamps.length > 0) {
+                    state.lastResetTimestamp = Math.max(...timestamps);
+                }
+            }
         }
 
         async function syncWithGas() {
@@ -1028,16 +1426,18 @@
             textEl.innerHTML = `<i class="fa-solid fa-arrows-rotate animate-spin mr-1"></i> 同步中...`;
 
             try {
-                const res = await fetch(`${state.gasUrl}?action=readAll`);
+                const res = await fetch(`${state.gasUrl}?action=readAll`, { redirect: 'follow' });
                 const json = await res.json();
 
                 if (json.status === 'success') {
                     if (json.logs) state.logs = json.logs;
                     if (json.misses) state.misses = json.misses;
+                    if (json.letters) state.letters = json.letters;
                     
                     recalculateResetTimeFromLogs();
                     saveLocalState();
                     renderAll();
+                    checkUnreadLetters();
                     textEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> 同步成功`;
                 } else {
                     textEl.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 mr-1"></i> 同步失敗`;
@@ -1055,18 +1455,12 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-            } catch(e) {
-                console.error("Post to GAS failed", e);
-            }
+            } catch(e) {}
         }
 
         function escapeHtml(str) {
             if (!str) return '';
-            return str.replace(/&/g, "&amp;")
-                      .replace(/</g, "&lt;")
-                      .replace(/>/g, "&gt;")
-                      .replace(/"/g, "&quot;")
-                      .replace(/'/g, "&#039;");
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
     </script>
 </body>
