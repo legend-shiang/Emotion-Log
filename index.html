@@ -4,7 +4,18 @@
     <meta charset="UTF-8">
     <!-- Mobile optimization: disable pinch/double tap zoom -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>情緒記錄與想念計數工具</title>
+    <title>雙人相處陪伴簿</title>
+
+    <!-- App Icons (Web & PWA Add to Home Screen) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23e11d48'/%3E%3Cstop offset='100%25' stop-color='%23f43f5e'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='128' fill='url(%23g)'/%3E%3Cpath fill='%23ffffff' d='M462.3 62.6C407.5 15.9 326 24.3 275.7 76.2L256 96.5l-19.7-20.3C186.1 24.3 104.5 15.9 49.7 62.6c-62.8 53.6-66.1 149.8-9.9 207.9l193.5 199.8c12.5 12.9 32.8 12.9 45.3 0l193.5-199.8c56.3-58.1 53-154.3-9.8-207.9z' transform='scale(0.7) translate(110, 110)'/%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23e11d48'/%3E%3Cstop offset='100%25' stop-color='%23f43f5e'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='128' fill='url(%23g)'/%3E%3Cpath fill='%23ffffff' d='M462.3 62.6C407.5 15.9 326 24.3 275.7 76.2L256 96.5l-19.7-20.3C186.1 24.3 104.5 15.9 49.7 62.6c-62.8 53.6-66.1 149.8-9.9 207.9l193.5 199.8c12.5 12.9 32.8 12.9 45.3 0l193.5-199.8c56.3-58.1 53-154.3-9.8-207.9z' transform='scale(0.7) translate(110, 110)'/%3E%3C/svg%3E">
+
+    <!-- Performance Optimization: Preconnect CDN Assets -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -13,6 +24,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <script>
         tailwind.config = {
             theme: {
@@ -173,9 +185,9 @@
                     <div class="bg-gradient-to-br from-rose-50 via-pink-50/50 to-orange-50/30 rounded-3xl p-5 border border-rose-200/80 shadow-sm flex flex-col items-center justify-between min-h-[290px] relative overflow-hidden">
                         <div class="w-full text-center">
                             <div class="inline-block px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-[11px] font-medium mb-1">
-                                <i class="fa-solid fa-sparkles mr-1 text-amber-500"></i>5 秒自動歸併為一筆記錄
+                                <i class="fa-solid fa-sparkles mr-1 text-amber-500">此刻想起對方時按按鈕，將無聲思念化為溫柔的痕跡</i>
                             </div>
-                            <p class="text-xs text-rose-600/80 font-light">此刻想起對方時按按鈕，將無聲思念化為溫柔的痕跡</p>
+                            <p class="text-xs text-rose-600/80 font-light"></p>
                         </div>
 
                         <!-- Woodblock Button -->
@@ -566,7 +578,7 @@
                     <p id="readLetterContentText" class="text-slate-700 whitespace-pre-wrap"></p>
                     <!-- Lazy Loaded Photo Container -->
                     <div id="readLetterImageWrapper" class="hidden rounded-xl overflow-hidden border border-rose-200 shadow-2xs">
-                        <img id="readLetterImageEl" src="" class="w-full h-auto object-cover max-h-52">
+                        <img id="readLetterImageEl" src="" loading="lazy" class="w-full h-auto object-cover max-h-52">
                     </div>
                 </div>
             </div>
@@ -630,7 +642,7 @@
 
     <script>
         const PRESET_TAGS = ["價值觀差異", "溝通語氣", "邊界感與安全感", "生活習慣", "陪伴時間與分配", "承諾與期望落差", "情緒消化方式"];
-        const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbzojyURdNXuki_VnwZupa97CRA9Ni_t6eP1RADG1uJq00LeArO8exGPnoLRrXCZZVU/exec";
+        const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbzydrdKn7kNSGP-ahTn1RP2hyhtS5qkEnYTOiNyZahUVXboF5RkPtFT91zsswtLk7_p/exec";
 
         let state = {
             currentUser: null,        // 'Me' or 'Partner'
@@ -1243,7 +1255,10 @@
                 return;
             }
 
-            state.misses.forEach(m => {
+            // 【新功能】依時間降序排序：最新的想念紀錄放在最上面
+            const sortedMisses = [...state.misses].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            sortedMisses.forEach(m => {
                 const userText = m.user === 'Me' ? '秋刀魚' : '白鯧魚';
                 const timeStr = new Date(m.timestamp).toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
 
