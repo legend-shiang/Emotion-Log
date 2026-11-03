@@ -598,10 +598,10 @@
 
     <!-- MODAL 4: Emotion Log Entry Modal -->
     <div id="logModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
-            <div class="p-4 bg-gradient-to-r from-rose-600 to-pink-600 text-white flex justify-between items-center">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-4 bg-gradient-to-r from-rose-500 to-pink-500 text-white flex justify-between items-center">
                 <h3 class="font-bold text-sm flex items-center gap-1.5">
-                    <i class="fa-solid fa-heart-crack"></i> 新增情緒感受紀錄
+                    <i class="fa-solid fa-pen-nib"></i> 記錄我的真實感受
                 </h3>
                 <button onclick="closeLogModal()" class="text-rose-100 hover:text-white transition p-1">
                     <i class="fa-solid fa-xmark text-lg"></i>
@@ -610,38 +610,73 @@
 
             <form id="logForm" onsubmit="handleLogFormSubmit(event)" class="p-4 overflow-y-auto space-y-3.5 text-xs">
                 <div>
-                    <label class="block font-semibold text-slate-700 mb-1">1. 事件簡述 <span class="text-rose-500">*</span></label>
-                    <textarea id="logEvent" required rows="2" placeholder="請客觀描述發生的具體事件或情境，避免指責語氣..." class="w-full px-3 py-2 border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-400 focus:outline-none"></textarea>
+                    <label class="block font-semibold text-slate-700 mb-1">發生的事件簡述 (客觀描述事實) <span class="text-rose-500">*</span></label>
+                    <input type="text" id="logEvent" required placeholder="例：關於週末安排時間的討論..." class="w-full px-3 py-2 border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-400 focus:outline-none">
                 </div>
 
                 <div>
-                    <label class="block font-semibold text-slate-700 mb-1">2. 我的真實感受 <span class="text-rose-500">*</span></label>
-                    <textarea id="logFeelings" required rows="2" placeholder="用「我覺得...」開頭，表達委屈、孤單或被忽略等真實感受..." class="w-full px-3 py-2 border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-400 focus:outline-none"></textarea>
+                    <label class="block font-semibold text-slate-700 mb-1">我的真實感受 (描述「我覺得…」) <span class="text-rose-500">*</span></label>
+                    <textarea id="logFeelings" required rows="3" placeholder="描述當下的情緒與受傷的感受，避免直接攻擊指責對方..." class="w-full px-3 py-2 border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-400 focus:outline-none"></textarea>
                 </div>
 
                 <div>
-                    <label class="block font-semibold text-slate-700 mb-1">3. 失望/難受程度 (1 ~ 5 分) <span class="text-rose-500">*</span></label>
-                    <div class="flex items-center gap-3">
-                        <input type="range" id="logDisappointment" min="1" max="5" value="3" oninput="document.getElementById('disapVal').innerText = this.value" class="flex-1 accent-rose-500">
-                        <span id="disapVal" class="w-8 text-center font-bold text-xs bg-rose-100 text-rose-700 py-1 rounded-lg">3</span> 分
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="font-semibold text-slate-700">失望程度 (1 ~ 5 分)</label>
+                        <span id="disapVal" class="font-extrabold text-rose-600 text-sm">3</span>
+                    </div>
+                    <input type="range" id="logDisappointment" min="1" max="5" value="3" oninput="document.getElementById('disapVal').innerText = this.value" class="w-full accent-rose-500 cursor-pointer">
+                    <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+                        <span>1分 (微小遺憾)</span>
+                        <span>3分 (相當委屈)</span>
+                        <span>5分 (極度難過)</span>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block font-semibold text-slate-700 mb-1">4. 我需要對方知道的事 / 期待（選填）</label>
-                    <textarea id="logNeeds" rows="2" placeholder="希望對方如何陪伴或未來可以嘗試調整的小行動..." class="w-full px-3 py-2 border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-400 focus:outline-none"></textarea>
+                    <label class="block font-semibold text-slate-700 mb-1">我希望對方知道的事 / 未來期待 (選填)</label>
+                    <textarea id="logNeeds" rows="2" placeholder="說明自己需要什麼樣的理解或改進期待..." class="w-full px-3 py-2 border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-400 focus:outline-none"></textarea>
                 </div>
 
                 <div>
-                    <label class="block font-semibold text-slate-700 mb-1">5. 議題標籤（可多選）</label>
-                    <div class="flex flex-wrap gap-1.5 pt-1" id="tagOptionsContainer">
-                        <!-- Dynamic Tag Chips -->
-                    </div>
+                    <label class="block font-semibold text-slate-700 mb-1">衝突議題標籤 (選填，用於歸納矛盾類型)</label>
+                    <div id="tagOptionsContainer" class="flex flex-wrap gap-1.5 pt-1"></div>
                 </div>
 
                 <div class="pt-2 flex justify-end gap-2 border-t border-slate-100">
                     <button type="button" onclick="closeLogModal()" class="px-4 py-2 border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50 font-medium">取消</button>
-                    <button type="submit" class="px-5 py-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-xl font-semibold shadow-md">儲存送出</button>
+                    <button type="submit" class="px-5 py-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-xl font-semibold shadow-md">保存並重置平穩時間</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 5: Reply / Reflection Modal -->
+    <div id="replyModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white flex justify-between items-center">
+                <h3 class="font-bold text-sm flex items-center gap-1.5">
+                    <i class="fa-solid fa-hand-holding-heart"></i> 給予溫柔回覆與回應
+                </h3>
+                <button onclick="closeReplyModal()" class="text-rose-100 hover:text-white transition p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="replyForm" onsubmit="handleReplyFormSubmit(event)" class="p-4 overflow-y-auto space-y-3 text-xs">
+                <input type="hidden" id="replyTargetLogId">
+                <div class="p-3 bg-rose-50/60 rounded-2xl border border-rose-100 space-y-1">
+                    <span class="text-[10px] text-slate-400 font-medium">對方描述的感受：</span>
+                    <p id="replyTargetFeelingPreview" class="text-slate-700 italic font-medium leading-relaxed"></p>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">我的反省與回應 <span class="text-rose-500">*</span></label>
+                    <textarea id="replyContentInput" required rows="4" placeholder="寫下您的理解、反省道歉或未來調整的方向（例如：我知道讓你受委屈了，我下次會多注意...）" class="w-full px-3 py-2 border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-400 focus:outline-none"></textarea>
+                </div>
+
+                <div class="pt-2 flex justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="closeReplyModal()" class="px-4 py-2 border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50 font-medium">取消</button>
+                    <button type="submit" id="submitReplyBtn" class="px-5 py-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-xl font-semibold shadow-md">送出溫柔回應</button>
                 </div>
             </form>
         </div>
@@ -649,7 +684,7 @@
 
     <script>
         const PRESET_TAGS = ["價值觀差異", "溝通語氣", "邊界感與安全感", "生活習慣", "陪伴時間與分配", "承諾與期望落差", "情緒消化方式"];
-        const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbzydrdKn7kNSGP-ahTn1RP2hyhtS5qkEnYTOiNyZahUVXboF5RkPtFT91zsswtLk7_p/exec";
+        const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbyCXo6adN7cP0Wr7Z1_Hblz_wqLc_xeJV5jG1O0G54_GtrfaO5BaaYnCs-VwlZppg2l/exec";
 
         let state = {
             currentUser: null,        // 'Me' or 'Partner'
@@ -1281,7 +1316,7 @@
                 return;
             }
 
-            // 【BUG 修正 2】依時間降序排序：最新的情緒感受紀錄放在最上面
+            // 依時間降序排序：最新的情緒感受紀錄放在最上面
             const sortedLogs = [...state.logs].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
             sortedLogs.forEach(log => {
@@ -1291,6 +1326,12 @@
 
                 const timeStr = new Date(log.timestamp).toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
                 const tagsHtml = (log.tags || []).map(t => `<span class="bg-rose-50 text-rose-600 px-2 py-0.5 rounded text-[10px] font-medium border border-rose-100"># ${t}</span>`).join(' ');
+
+                // 檢查是否可以回覆（自己不能回覆自己發出的日誌，且需在登入狀態）
+                const canReply = state.currentUser && (log.user !== state.currentUser);
+                const hasReply = log.replyContent && log.replyContent.trim().length > 0;
+                const replierName = log.replier === 'Me' ? (state.currentUser === 'Me' ? state.displayName : '秋刀魚') : (state.currentUser === 'Partner' ? state.displayName : '白鯧魚');
+                const replyTimeStr = log.replyTimestamp ? new Date(log.replyTimestamp).toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
 
                 const card = document.createElement('div');
                 card.className = "bg-white p-3.5 rounded-2xl border border-rose-100 shadow-2xs space-y-2 relative";
@@ -1328,9 +1369,75 @@
                     </div>
 
                     ${tagsHtml ? `<div class="pt-1 flex flex-wrap gap-1">${tagsHtml}</div>` : ''}
+
+                    <!-- 回覆與反省區塊 -->
+                    <div class="pt-2 border-t border-rose-50">
+                        ${hasReply ? `
+                            <div class="bg-gradient-to-r from-pink-50 to-rose-50 p-2.5 rounded-xl border border-pink-100/80 space-y-1 text-xs">
+                                <div class="flex justify-between items-center text-[10px]">
+                                    <span class="font-bold text-rose-700 flex items-center gap-1">
+                                        <i class="fa-solid fa-hand-holding-heart text-pink-500"></i> ${replierName} 的溫柔回應與反省：
+                                    </span>
+                                    <span class="text-slate-400">${replyTimeStr}</span>
+                                </div>
+                                <p class="text-slate-700 whitespace-pre-wrap leading-relaxed">${escapeHtml(log.replyContent)}</p>
+                            </div>
+                        ` : (canReply ? `
+                            <button onclick="openReplyModal('${log.id}', \`${escapeHtml(log.feelings)}\`)" class="w-full py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-medium rounded-xl border border-rose-200/80 transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-reply"></i> 給予對方溫柔回應與反省
+                            </button>
+                        ` : '')}
+                    </div>
                 `;
                 container.appendChild(card);
             });
+        }
+
+        /* --- 新增：回覆 Modal 邏輯 --- */
+        function openReplyModal(logId, feelingsText) {
+            document.getElementById('replyTargetLogId').value = logId;
+            document.getElementById('replyTargetFeelingPreview').innerText = feelingsText;
+            document.getElementById('replyContentInput').value = '';
+            document.getElementById('replyModal').classList.remove('hidden');
+        }
+
+        function closeReplyModal() {
+            document.getElementById('replyModal').classList.add('hidden');
+        }
+
+        async function handleReplyFormSubmit(e) {
+            e.preventDefault();
+            const logId = document.getElementById('replyTargetLogId').value;
+            const replyContent = document.getElementById('replyContentInput').value.trim();
+
+            if (!logId || !replyContent) return;
+
+            const submitBtn = document.getElementById('submitReplyBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 送出中...`;
+
+            // 更新本地數據
+            const targetLog = state.logs.find(l => String(l.id) === String(logId));
+            if (targetLog) {
+                targetLog.replyContent = replyContent;
+                targetLog.replyTimestamp = new Date().toISOString();
+                targetLog.replier = state.currentUser;
+            }
+
+            saveLocalState();
+            renderLogsList();
+            closeReplyModal();
+
+            // 同步至 GAS 後端
+            await postToGas({
+                action: 'replyLog',
+                logId: logId,
+                replyContent: replyContent,
+                replier: state.currentUser
+            });
+
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `送出溫柔回應`;
         }
 
         function renderMuyuList() {
