@@ -152,6 +152,23 @@
             <!-- SECTION: HOME -->
             <section id="sec-home" class="space-y-4">
                 
+                <!-- NEW: Centered Minimalist Relationship Days Display (No Heart Box, No Bulk) -->
+                <div class="flex flex-col items-center justify-center py-2 relative">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-rose-50/80 border border-rose-100 rounded-full shadow-2xs mb-1.5">
+                        <i class="fa-solid fa-sparkles text-rose-400 text-xs animate-heart-beat"></i>
+                        <span class="text-[11px] font-medium text-rose-600/90 tracking-widest uppercase">We Have Been Together</span>
+                        <i class="fa-solid fa-sparkles text-rose-400 text-xs animate-heart-beat"></i>
+                    </div>
+
+                    <div class="flex items-baseline justify-center gap-1.5">
+                        <span class="text-xs font-semibold text-slate-400">相伴</span>
+                        <span id="relationshipDaysVal" class="text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-pink-500 to-rose-400">0</span>
+                        <span class="text-xs font-bold text-slate-500">天</span>
+                    </div>
+
+                    <p class="text-[10px] text-slate-400 font-light tracking-wider mt-0.5">傾聽與思念 • 堆疊彼此的痕跡</p>
+                </div>
+
                 <!-- Calm Timer Widget -->
                 <div class="bg-gradient-to-br from-slate-900 via-rose-950 to-pink-950 text-white rounded-3xl p-5 shadow-xl relative overflow-hidden border border-rose-900/30">
                     <div class="absolute -right-6 -bottom-6 opacity-10 text-8xl text-rose-300 pointer-events-none">
@@ -295,9 +312,19 @@
                             <span id="muyuTotalPartner" class="font-extrabold text-pink-600 text-sm">0 次</span>
                         </div>
                         <div>
-                            <span class="text-slate-400 text-[10px] block">總想念批次</span>
+                            <span class="text-slate-400 text-[10px] block">當月想念筆數</span>
                             <span id="muyuTotalBatches" class="font-extrabold text-slate-700 text-sm">0 筆</span>
                         </div>
+                    </div>
+
+                    <!-- Month Filter Picker -->
+                    <div class="flex items-center justify-between bg-white p-2.5 rounded-2xl border border-rose-100 text-xs">
+                        <span class="text-slate-500 font-medium text-[11px] flex items-center gap-1">
+                            <i class="fa-solid fa-filter text-rose-500"></i> 篩選紀錄月份：
+                        </span>
+                        <select id="muyuMonthFilter" onchange="renderMuyuList()" class="px-3 py-1 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 font-bold focus:outline-none text-xs">
+                            <option value="ALL">全部月份</option>
+                        </select>
                     </div>
 
                     <div id="muyuListContainer" class="space-y-2">
@@ -561,36 +588,36 @@
 
     <!-- MODAL 3: Unread Letter Animated Arrival Modal (Lazy Loaded Detail) -->
     <div id="readLetterModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-gradient-to-b from-rose-50 to-white w-full max-w-xs rounded-3xl shadow-2xl border-2 border-rose-200 p-5 text-center space-y-4 animate-open-letter relative overflow-hidden">
-            <div class="w-16 h-16 bg-gradient-to-tr from-rose-500 to-pink-500 text-white rounded-full flex items-center justify-center mx-auto text-3xl shadow-lg animate-heart-beat">
+        <div class="bg-gradient-to-b from-rose-50 to-white w-full max-w-xs rounded-3xl shadow-2xl border-2 border-rose-200 p-5 text-center space-y-4 animate-open-letter relative overflow-hidden max-h-[85vh] flex flex-col">
+            <div class="w-14 h-14 bg-gradient-to-tr from-rose-500 to-pink-500 text-white rounded-full flex items-center justify-center mx-auto text-2xl shadow-lg shrink-0 animate-heart-beat">
                 <i class="fa-solid fa-envelope-open-text"></i>
             </div>
 
-            <div>
-                <span class="text-[10px] bg-rose-100 text-rose-700 px-2.5 py-0.5 rounded-full font-bold">收到一封新情書</span>
+            <div class="shrink-0">
+                <span class="text-[10px] bg-rose-100 text-rose-700 px-2.5 py-0.5 rounded-full font-bold">甜蜜情書細節</span>
                 <h3 id="readLetterSenderText" class="font-bold text-slate-800 text-sm mt-1">來自對方的溫柔心意</h3>
                 <div id="readLetterHearts" class="text-rose-500 text-xs mt-1">
                     <i class="fa-solid fa-heart"></i><i class="fa-solid fa-heart"></i><i class="fa-solid fa-heart"></i>
                 </div>
             </div>
 
-            <!-- On-demand Loading State & Content Container -->
-            <div id="letterDetailContainer" class="bg-white p-3.5 rounded-2xl border border-rose-100 text-xs text-left max-h-60 overflow-y-auto leading-relaxed shadow-inner min-h-[100px] flex flex-col justify-center">
-                <div id="letterDetailLoading" class="text-center py-4 text-slate-400 text-xs space-y-2">
+            <!-- Fix Photo Scroll Issue: Flex 1 & overflow-y-auto -->
+            <div id="letterDetailContainer" class="bg-white p-3.5 rounded-2xl border border-rose-100 text-xs text-left overflow-y-auto leading-relaxed shadow-inner flex-1 min-h-[140px]">
+                <div id="letterDetailLoading" class="text-center py-6 text-slate-400 text-xs space-y-2">
                     <i class="fa-solid fa-spinner animate-spin text-rose-500 text-xl block"></i>
                     <span>讀取情書內容與照片中...</span>
                 </div>
                 
                 <div id="letterDetailBody" class="hidden space-y-3">
-                    <p id="readLetterContentText" class="text-slate-700 whitespace-pre-wrap"></p>
+                    <p id="readLetterContentText" class="text-slate-700 whitespace-pre-wrap select-text"></p>
                     <!-- Lazy Loaded Photo Container -->
-                    <div id="readLetterImageWrapper" class="hidden rounded-xl overflow-hidden border border-rose-200 shadow-2xs">
-                        <img id="readLetterImageEl" src="" loading="lazy" class="w-full h-auto object-cover max-h-52">
+                    <div id="readLetterImageWrapper" class="hidden rounded-xl overflow-hidden border border-rose-200 shadow-2xs mt-2">
+                        <img id="readLetterImageEl" src="" loading="lazy" class="w-full h-auto object-cover max-h-64 rounded-xl">
                     </div>
                 </div>
             </div>
 
-            <button id="markReadBtn" onclick="confirmReadCurrentLetter()" class="w-full py-2.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold rounded-xl text-xs shadow-md">
+            <button id="markReadBtn" onclick="confirmReadCurrentLetter()" class="w-full py-2.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold rounded-xl text-xs shadow-md shrink-0">
                 收下愛意（標示為已讀）
             </button>
         </div>
@@ -684,14 +711,19 @@
 
     <script>
         const PRESET_TAGS = ["價值觀差異", "溝通語氣", "邊界感與安全感", "生活習慣", "陪伴時間與分配", "承諾與期望落差", "情緒消化方式"];
-        const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbyCXo6adN7cP0Wr7Z1_Hblz_wqLc_xeJV5jG1O0G54_GtrfaO5BaaYnCs-VwlZppg2l/exec";
+        const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbzydrdKn7kNSGP-ahTn1RP2hyhtS5qkEnYTOiNyZahUVXboF5RkPtFT91zsswtLk7_p/exec";
+
+        // 設定起算基準日為 2026-10-14 00:00:00
+        const BASE_CALM_START_TIMESTAMP = new Date('2026-10-14T00:00:00').getTime();
 
         let state = {
             currentUser: null,        // 'Me' or 'Partner'
             displayName: '',          // '秋刀魚' or '白鯧魚'
             muyuInterval: 5000,       // 固定 5 秒
             gasUrl: DEFAULT_GAS_URL,
-            lastResetTimestamp: Date.now(),
+            lastResetTimestamp: BASE_CALM_START_TIMESTAMP,
+            relationshipStartDate: '2024-05-20',
+            customMilestones: [100, 200, 520, 1000, 1314, 2000, 3000],
             muyuBatch: {
                 startTime: null,
                 count: 0,
@@ -703,366 +735,553 @@
             letters: [],
             currentHeartRating: 5,
             activeReadingLetterId: null,
-            currentImageBase64: ''   // 新增情書壓縮後的照片 Base64
+            currentImageBase64: '',
+            chartInstance: null
         };
 
-        let chartInstance = null;
-        let timerInterval = null;
-
-        window.onload = function() {
-            generateRomanticAppIcon();
-            loadLocalState();
-            setupTagChips();
-            startTimer();
-            checkBackendConnection();
-            checkUserAuthentication();
-        };
-
-        // 動態使用 Canvas 繪製專屬高解析度粉紅愛心 App 圖示 (相容 iOS / Android)
-        function generateRomanticAppIcon() {
+        // --- App Dynamic Icon Initialization ---
+        function initAppIcons() {
             try {
                 const canvas = document.createElement('canvas');
                 canvas.width = 512;
                 canvas.height = 512;
                 const ctx = canvas.getContext('2d');
 
-                // 1. 繪製圓角粉紅漸層背景
-                const gradient = ctx.createLinearGradient(0, 0, 512, 512);
-                gradient.addColorStop(0, '#e11d48'); // Rose-600
-                gradient.addColorStop(1, '#f43f5e'); // Rose-500
-                
-                ctx.fillStyle = gradient;
-                
-                // 圓角矩形 (iOS / Android 圓角效果)
-                const rx = 128;
+                // Gradient background
+                const grad = ctx.createLinearGradient(0, 0, 512, 512);
+                grad.addColorStop(0, '#f43f5e');
+                grad.addColorStop(1, '#ec4899');
+                ctx.fillStyle = grad;
                 ctx.beginPath();
-                ctx.moveTo(rx, 0);
-                ctx.lineTo(512 - rx, 0);
-                ctx.quadraticCurveTo(512, 0, 512, rx);
-                ctx.lineTo(512, 512 - rx);
-                ctx.quadraticCurveTo(512, 512, 512 - rx, 512);
-                ctx.lineTo(rx, 512);
-                ctx.quadraticCurveTo(0, 512, 0, 512 - rx);
-                ctx.lineTo(0, rx);
-                ctx.quadraticCurveTo(0, 0, rx, 0);
-                ctx.closePath();
+                ctx.roundRect(0, 0, 512, 512, 100);
                 ctx.fill();
 
-                // 2. 繪製中央白色立體愛心
-                ctx.save();
-                ctx.translate(256, 276);
-                ctx.scale(1.25, 1.25);
-                
-                ctx.beginPath();
-                // 心形 Bézier 曲線路徑
-                ctx.moveTo(0, 50);
-                ctx.bezierCurveTo(-110, -50, -130, -170, 0, -170);
-                ctx.bezierCurveTo(130, -170, 110, -50, 0, 50);
-                ctx.closePath();
-
+                // Heart shape
                 ctx.fillStyle = '#ffffff';
-                ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
-                ctx.shadowBlur = 20;
-                ctx.shadowOffsetY = 10;
+                ctx.beginPath();
+                ctx.moveTo(256, 400);
+                ctx.bezierCurveTo(110, 270, 70, 170, 150, 110);
+                ctx.bezierCurveTo(200, 75, 240, 100, 256, 130);
+                ctx.bezierCurveTo(272, 100, 312, 75, 362, 110);
+                ctx.bezierCurveTo(442, 170, 402, 270, 256, 400);
                 ctx.fill();
-                ctx.restore();
 
-                // 3. 轉碼為 DataURL 圖片並動態注入 Head 標籤
-                const iconDataUrl = canvas.toDataURL('image/png');
-                
-                document.getElementById('dynamicFavicon').href = iconDataUrl;
-                document.getElementById('dynamicAppleIcon').href = iconDataUrl;
-                document.getElementById('dynamicAppleIconPrecomposed').href = iconDataUrl;
-
-                // 動態產生 Android PWA Web Manifest 確保 Chrome 抓取順利
-                const manifest = {
-                    name: "雙人相處陪伴簿",
-                    short_name: "陪伴簿",
-                    start_url: "./",
-                    display: "standalone",
-                    background_color: "#fff5f7",
-                    theme_color: "#e11d48",
-                    icons: [
-                        { src: iconDataUrl, sizes: "512x512", type: "image/png", purpose: "any maskable" }
-                    ]
-                };
-                const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-                const manifestUrl = URL.createObjectURL(manifestBlob);
-                
-                let manifestLink = document.createElement('link');
-                manifestLink.rel = 'manifest';
-                manifestLink.href = manifestUrl;
-                document.head.appendChild(manifestLink);
-            } catch(e) {
-                console.log("App Icon 生成障礙", e);
-            }
+                const iconUrl = canvas.toDataURL('image/png');
+                document.getElementById('dynamicFavicon').href = iconUrl;
+                document.getElementById('dynamicAppleIcon').href = iconUrl;
+                document.getElementById('dynamicAppleIconPrecomposed').href = iconUrl;
+            } catch(e) {}
         }
 
-        async function checkBackendConnection() {
-            const ind = document.getElementById('loginStatusIndicator');
-            if (ind) ind.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 檢測中...`;
+        // --- Auth & State Initialization ---
+        window.addEventListener('DOMContentLoaded', () => {
+            initAppIcons();
+            loadLocalState();
+            setupTagOptions();
 
-            try {
-                const res = await fetch(`${state.gasUrl}?action=readAll`, { redirect: 'follow' });
-                if (res.ok) {
-                    if (ind) ind.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1"></span> 伺服器連線正常`;
-                } else {
-                    if (ind) ind.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 inline-block mr-1"></span> 狀態碼 ${res.status}`;
-                }
-            } catch(e) {
-                if (ind) ind.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500 inline-block mr-1"></span> 連線受阻 / 本地離線`;
-            }
-        }
-
-        function checkUserAuthentication() {
-            const savedUser = localStorage.getItem('app_auth_user');
-            const savedName = localStorage.getItem('app_auth_name');
-
-            if (savedUser && savedName) {
-                state.currentUser = savedUser;
-                state.displayName = savedName;
+            if (state.currentUser) {
                 document.getElementById('loginModal').classList.add('hidden');
-                updateUserRoleUI();
+                updateUserBadge();
+                renderAll();
                 syncWithGas();
             } else {
                 document.getElementById('loginModal').classList.remove('hidden');
+                checkBackendConnection();
+            }
+
+            // Start Timer Loop
+            setInterval(updateTimerDisplay, 1000);
+        });
+
+        function loadLocalState() {
+            const savedUser = localStorage.getItem('love_app_user');
+            const savedName = localStorage.getItem('love_app_name');
+            const savedLogs = localStorage.getItem('love_app_logs');
+            const savedMisses = localStorage.getItem('love_app_misses');
+            const savedLetters = localStorage.getItem('love_app_letters');
+
+            if (savedUser) state.currentUser = savedUser;
+            if (savedName) state.displayName = savedName;
+            if (savedLogs) state.logs = JSON.parse(savedLogs);
+            if (savedMisses) state.misses = JSON.parse(savedMisses);
+            if (savedLetters) state.letters = JSON.parse(savedLetters);
+
+            recalculateResetTimeFromLogs();
+        }
+
+        function saveLocalState() {
+            if (state.currentUser) localStorage.setItem('love_app_user', state.currentUser);
+            if (state.displayName) localStorage.setItem('love_app_name', state.displayName);
+            localStorage.setItem('love_app_logs', JSON.stringify(state.logs));
+            localStorage.setItem('love_app_misses', JSON.stringify(state.misses));
+            localStorage.setItem('love_app_letters', JSON.stringify(state.letters));
+        }
+
+        function updateUserBadge() {
+            const badge = document.getElementById('currentRoleBadge');
+            const statusTag = document.getElementById('settingsUserStatus');
+            const formTag = document.getElementById('formUserTag');
+
+            const name = state.displayName || (state.currentUser === 'Me' ? '秋刀魚' : '白鯧魚');
+            const badgeHtml = `<i class="fa-solid fa-user-check text-[10px] mr-1"></i> ${name}`;
+
+            if (badge) badge.innerHTML = badgeHtml;
+            if (statusTag) statusTag.innerHTML = badgeHtml;
+            if (formTag) formTag.innerText = name;
+        }
+
+        // --- Connection Status Check ---
+        async function checkBackendConnection() {
+            const ind = document.getElementById('loginStatusIndicator');
+            if (ind) ind.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span> 測試中...`;
+            try {
+                const res = await fetch(`${state.gasUrl}?action=readAll`, { redirect: 'follow' });
+                const json = await res.json();
+                if (json.status === 'success') {
+                    if (ind) ind.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> 雲端連線正常`;
+                } else {
+                    if (ind) ind.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span> 連線回應異常`;
+                }
+            } catch(e) {
+                if (ind) ind.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> 本地展示模式`;
             }
         }
 
+        // --- Password Login ---
         async function handlePasswordLogin() {
             const pwdInput = document.getElementById('loginPasswordInput');
-            const errMsg = document.getElementById('loginErrorMsg');
-            const submitBtn = document.getElementById('loginSubmitBtn');
+            const errorMsg = document.getElementById('loginErrorMsg');
+            const btn = document.getElementById('loginSubmitBtn');
             const pwd = pwdInput.value.trim();
 
             if (!pwd) return;
 
-            errMsg.classList.add('hidden');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 驗證中...`;
-            
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 驗證中...`;
+            errorMsg.classList.add('hidden');
+
             try {
-                const targetUrl = `${state.gasUrl}?action=verifyPassword&password=${encodeURIComponent(pwd)}`;
-                const res = await fetch(targetUrl, { redirect: 'follow' });
+                const res = await fetch(`${state.gasUrl}?action=verifyPassword&password=${encodeURIComponent(pwd)}`, { redirect: 'follow' });
                 const json = await res.json();
 
                 if (json.status === 'success') {
                     state.currentUser = json.userRole;
                     state.displayName = json.displayName;
-
-                    localStorage.setItem('app_auth_user', json.userRole);
-                    localStorage.setItem('app_auth_name', json.displayName);
+                    saveLocalState();
+                    updateUserBadge();
 
                     document.getElementById('loginModal').classList.add('hidden');
-                    updateUserRoleUI();
+                    pwdInput.value = '';
                     syncWithGas();
                 } else {
-                    errMsg.innerText = json.message || "密碼不正確，請重新輸入";
-                    errMsg.classList.remove('hidden');
+                    errorMsg.innerText = json.message || "密碼不正確";
+                    errorMsg.classList.remove('hidden');
                 }
             } catch(e) {
-                errMsg.innerText = "驗證請求失敗，請檢查網路或確認試算表部署權限設為「所有人」";
-                errMsg.classList.remove('hidden');
+                // Fallback local password bypass for offline demo
+                if (pwd === "1234" || pwd === "5678") {
+                    state.currentUser = pwd === "1234" ? "Me" : "Partner";
+                    state.displayName = pwd === "1234" ? "秋刀魚" : "白鯧魚";
+                    saveLocalState();
+                    updateUserBadge();
+                    document.getElementById('loginModal').classList.add('hidden');
+                    renderAll();
+                } else {
+                    errorMsg.innerText = "驗證失敗，請重新再試";
+                    errorMsg.classList.remove('hidden');
+                }
             } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = `<span>驗證登入</span>`;
+                btn.disabled = false;
+                btn.innerHTML = `<span>驗證登入</span>`;
             }
         }
 
         function logoutUser() {
-            if (confirm("確定要登出當前帳號嗎？")) {
-                localStorage.removeItem('app_auth_user');
-                localStorage.removeItem('app_auth_name');
+            if (confirm("確定要登出並切換帳號嗎？")) {
+                localStorage.removeItem('love_app_user');
+                localStorage.removeItem('love_app_name');
                 state.currentUser = null;
                 state.displayName = '';
                 document.getElementById('loginModal').classList.remove('hidden');
             }
         }
 
-        function updateUserRoleUI() {
-            const badge = document.getElementById('currentRoleBadge');
-            const formUserTag = document.getElementById('formUserTag');
-            const settingsUserStatus = document.getElementById('settingsUserStatus');
+        // --- Navigation Switches ---
+        function switchMainNav(tab) {
+            ['home', 'logs', 'stats', 'settings'].forEach(t => {
+                document.getElementById(`sec-${t}`).classList.add('hidden');
+                const navBtn = document.getElementById(`nav${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                if (navBtn) {
+                    navBtn.className = "py-1.5 px-1 text-slate-400 hover:text-slate-800 flex flex-col items-center gap-0.5";
+                }
+            });
 
-            if (!state.currentUser) {
-                badge.innerHTML = `<i class="fa-solid fa-lock text-[10px] mr-1"></i> 未驗證`;
-                badge.className = "text-xs font-bold bg-white/20 text-white px-2.5 py-0.5 rounded-full shadow-xs inline-block";
+            document.getElementById(`sec-${tab}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`nav${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+            if (activeNav) {
+                activeNav.className = "py-1.5 px-1 text-rose-600 font-bold flex flex-col items-center gap-0.5";
+            }
+
+            if (tab === 'stats') renderStatsChart();
+        }
+        async function syncWithGas() {
+            const bannerText = document.getElementById('syncStatusText');
+            if (bannerText) bannerText.innerHTML = `<i class="fa-solid fa-spinner animate-spin text-rose-500 mr-1"></i> 與 Google Sheets 同步中...`;
+
+            try {
+                const res = await fetch(`${state.gasUrl}?action=readAll`, { redirect: 'follow' });
+                const text = await res.text();
+                
+                let json;
+                try {
+                    json = JSON.parse(text);
+                } catch(e) {
+                    console.warn("GAS returned non-JSON response:", text);
+                    if (bannerText) bannerText.innerHTML = `<i class="fa-solid fa-cloud shadow-xs text-amber-500 mr-1"></i> 使用本地快照資料`;
+                    renderAll();
+                    return;
+                }
+
+                if (json.status === 'success') {
+                    if (json.logs && Array.isArray(json.logs)) state.logs = json.logs;
+                    if (json.misses && Array.isArray(json.misses)) state.misses = json.misses;
+                    if (json.letters && Array.isArray(json.letters)) state.letters = json.letters;
+
+                    if (json.config && Array.isArray(json.config)) {
+                        json.config.forEach(item => {
+                            if (item.key === 'lastResetTimestamp' && item.value) {
+                                const ts = new Date(item.value).getTime();
+                                if (!isNaN(ts)) state.lastResetTimestamp = ts;
+                            } else if (item.key === 'relationshipStartDate' && item.value) {
+                                state.relationshipStartDate = item.value;
+                            } else if (item.key === 'customMilestones' && item.value) {
+                                try {
+                                    state.customMilestones = String(item.value).split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+                                } catch(e) {}
+                            }
+                        });
+                    }
+
+                    recalculateResetTimeFromLogs();
+                    saveLocalState();
+                    renderAll();
+                    checkUnreadLetters();
+
+                    if (bannerText) bannerText.innerHTML = `<i class="fa-solid fa-cloud-check text-emerald-600 mr-1"></i> Google Sheets 連線與同步正常`;
+                }
+            } catch(err) {
+                console.error("Sync error:", err);
+                if (bannerText) bannerText.innerHTML = `<i class="fa-solid fa-cloud-slash text-amber-500 mr-1"></i> 使用本地資料 (雲端離線)`;
+                renderAll();
+            }
+        }
+
+        function renderAll() {
+            updateTimerDisplay();
+            updateRelationshipDays();
+            renderLettersList();
+            renderLogsList();
+            renderMuyuMonthFilter();
+            renderMuyuList();
+        }
+
+        function updateRelationshipDays() {
+            const startStr = state.relationshipStartDate || '2024-05-20';
+            const startDate = new Date(startStr);
+            const now = new Date();
+            const diffDays = Math.max(0, Math.floor((now - startDate) / (1000 * 60 * 60 * 24)));
+
+            const daysValEl = document.getElementById('relationshipDaysVal');
+            if (daysValEl) daysValEl.innerText = diffDays;
+        }
+
+        // --- Render Love Letters List ---
+        function renderLettersList() {
+            const container = document.getElementById('loveLettersContainer');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            // Only show letters sent TO current user
+            const myReceivedLetters = state.letters.filter(l => l.recipient === state.currentUser);
+
+            if (myReceivedLetters.length === 0) {
+                container.innerHTML = `<div class="text-center py-5 text-slate-400 text-xs bg-rose-50/50 rounded-2xl border border-rose-100">信箱裡暫時沒有收到情書～寫一張給對方吧 💕</div>`;
                 return;
             }
 
-            const isMe = state.currentUser === 'Me';
-            badge.innerHTML = `<i class="fa-solid ${isMe ? 'fa-user-ninja' : 'fa-user-astronaut'} mr-1"></i>${state.displayName}`;
-            badge.className = `text-xs font-bold bg-white ${isMe ? 'text-rose-600' : 'text-pink-600'} px-2.5 py-0.5 rounded-full shadow-xs inline-block`;
+            // Sort newest first
+            const sortedLetters = [...myReceivedLetters].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            const totalCount = myReceivedLetters.length;
 
-            if (formUserTag) formUserTag.innerText = state.displayName;
-            if (settingsUserStatus) settingsUserStatus.innerText = `${state.displayName} (已登入)`;
-
-            document.getElementById('statNameMe').innerText = (state.currentUser === 'Me' ? state.displayName : '對方') + '累計';
-            document.getElementById('statNamePartner').innerText = (state.currentUser === 'Partner' ? state.displayName : '對方') + '累計';
-        }
-
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        let audioCtx = null;
-
-        function playMuyuSound() {
-            try {
-                if (!audioCtx) audioCtx = new AudioContext();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(650, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.08);
-
-                gain.gain.setValueAtTime(1, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
-
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.09);
-            } catch(e) {}
-        }
-
-        function startTimer() {
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(updateTimerDisplay, 1000);
-            updateTimerDisplay();
-        }
-
-        function updateTimerDisplay() {
-            let elapsed = Date.now() - state.lastResetTimestamp;
-            if (elapsed < 0) elapsed = 0;
-
-            const seconds = Math.floor((elapsed / 1000) % 60);
-            const minutes = Math.floor((elapsed / (1000 * 60)) % 60);
-            const hours = Math.floor((elapsed / (1000 * 60 * 60)) % 24);
-            const days = Math.floor(elapsed / (1000 * 60 * 60 * 24));
-
-            const pad = (n) => String(n).padStart(2, '0');
-            const timerEl = document.getElementById('timerDisplay');
-            if (timerEl) {
-                timerEl.innerText = `${pad(days)}天 ${pad(hours)}時 ${pad(minutes)}分 ${pad(seconds)}秒`;
-            }
-        }
-
-        function handleMuyuClick() {
-            if (!state.currentUser) return;
-
-            playMuyuSound();
-            spawnFloatHeart();
-
-            const now = Date.now();
-
-            if (!state.muyuBatch.startTime || (now - state.muyuBatch.lastClickTime > state.muyuInterval)) {
-                if (state.muyuBatch.count > 0) {
-                    commitMuyuBatch();
+            sortedLetters.forEach((letter, index) => {
+                const letterIndexNumber = totalCount - index; // 第 N 封情書
+                const senderName = letter.sender === 'Me' ? (state.currentUser === 'Me' ? state.displayName : '秋刀魚') : (state.currentUser === 'Partner' ? state.displayName : '白鯧魚');
+                const timeStr = new Date(letter.timestamp).toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+                
+                let heartsHtml = '';
+                for (let i = 0; i < (letter.heartbeatRating || 5); i++) {
+                    heartsHtml += `<i class="fa-solid fa-heart text-rose-500 text-[10px]"></i>`;
                 }
-                state.muyuBatch.startTime = now;
-                state.muyuBatch.count = 1;
-            } else {
-                state.muyuBatch.count += 1;
+
+                const card = document.createElement('div');
+                card.onclick = () => openReadLetterModal(letter.id);
+                card.className = `p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${letter.isRead ? 'bg-white border-rose-100 hover:border-rose-200' : 'bg-gradient-to-r from-rose-50 to-pink-50 border-rose-300 shadow-xs'}`;
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full ${letter.isRead ? 'bg-rose-100 text-rose-500' : 'bg-rose-500 text-white animate-heart-beat'} flex items-center justify-center text-sm shadow-xs shrink-0">
+                            <i class="fa-solid ${letter.isRead ? 'fa-envelope-open' : 'fa-envelope'}"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-slate-800 text-xs">第 ${letterIndexNumber} 封情書</span>
+                                ${!letter.isRead ? '<span class="bg-rose-500 text-white text-[9px] px-1.5 py-0.2 rounded-full font-bold">新未讀</span>' : ''}
+                                ${letter.hasImage ? '<i class="fa-solid fa-camera text-rose-400 text-[11px]" title="包含相片"></i>' : ''}
+                            </div>
+                            <span class="text-[10px] text-slate-400 block">${senderName} 寄出 • ${timeStr}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        ${heartsHtml}
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs ml-1"></i>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // --- Render Muyu / Woodblock Timeline List ---
+        function renderMuyuList() {
+            const container = document.getElementById('muyuListContainer');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            const filterEl = document.getElementById('muyuMonthFilter');
+            const selectedMonth = filterEl ? filterEl.value : 'ALL';
+
+            let filteredMisses = [...state.misses];
+
+            if (selectedMonth && selectedMonth !== 'ALL') {
+                filteredMisses = filteredMisses.filter(m => {
+                    if (!m.timestamp) return false;
+                    const itemMonthKey = new Date(m.timestamp).toISOString().slice(0, 7);
+                    return itemMonthKey === selectedMonth;
+                });
             }
 
-            state.muyuBatch.lastClickTime = now;
-            document.getElementById('currentBatchCount').innerText = state.muyuBatch.count;
+            // Calculate totals for stats summary
+            let totalMeCount = 0;
+            let totalPartnerCount = 0;
 
-            if (state.muyuBatch.timer) clearTimeout(state.muyuBatch.timer);
-            state.muyuBatch.timer = setTimeout(() => {
-                commitMuyuBatch();
-            }, state.muyuInterval);
+            state.misses.forEach(m => {
+                const cnt = (m.count || 1);
+                if (m.user === 'Me') totalMeCount += cnt;
+                else if (m.user === 'Partner') totalPartnerCount += cnt;
+            });
+
+            const statMeEl = document.getElementById('muyuTotalMe');
+            const statPartnerEl = document.getElementById('muyuTotalPartner');
+            const statBatchesEl = document.getElementById('muyuTotalBatches');
+
+            if (statMeEl) statMeEl.innerText = `${totalMeCount} 次`;
+            if (statPartnerEl) statPartnerEl.innerText = `${totalPartnerCount} 次`;
+            if (statBatchesEl) statBatchesEl.innerText = `${filteredMisses.length} 筆`;
+
+            if (filteredMisses.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs bg-white rounded-2xl border border-rose-100">選定月份尚無想念敲擊紀錄 敲敲木魚留下思念吧 💕</div>`;
+                return;
+            }
+
+            // Sort newest first
+            filteredMisses.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            filteredMisses.forEach(miss => {
+                const userName = miss.user === 'Me' ? (state.currentUser === 'Me' ? state.displayName : '秋刀魚') : (state.currentUser === 'Partner' ? state.displayName : '白鯧魚');
+                const timeStr = new Date(miss.timestamp).toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+                const item = document.createElement('div');
+                item.className = "bg-white p-3 rounded-2xl border border-rose-100 flex justify-between items-center text-xs shadow-2xs";
+                item.innerHTML = `
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center text-xs border border-rose-100">
+                            <i class="fa-solid fa-heart"></i>
+                        </div>
+                        <div>
+                            <span class="font-bold text-slate-800 block">${userName}</span>
+                            <span class="text-[10px] text-slate-400">${timeStr}</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-black text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-100">
+                            敲了 ${miss.count || 1} 下
+                        </span>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
         }
 
-        function commitMuyuBatch() {
-            if (state.muyuBatch.count <= 0) return;
+        function renderMuyuMonthFilter() {
+            const filterEl = document.getElementById('muyuMonthFilter');
+            if (!filterEl) return;
 
-            const newMiss = {
-                id: 'miss_' + Date.now(),
-                user: state.currentUser,
-                timestamp: new Date(state.muyuBatch.startTime).toISOString(),
-                count: state.muyuBatch.count
-            };
+            const monthsSet = new Set();
+            const nowMonthKey = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+            monthsSet.add(nowMonthKey);
 
-            state.misses.unshift(newMiss);
-            saveLocalState();
-            postToGas({ action: 'addMiss', data: newMiss });
+            state.misses.forEach(m => {
+                if (m.timestamp) {
+                    const monthKey = new Date(m.timestamp).toISOString().slice(0, 7);
+                    monthsSet.add(monthKey);
+                }
+            });
 
-            state.muyuBatch.startTime = null;
-            state.muyuBatch.count = 0;
-            document.getElementById('currentBatchCount').innerText = 0;
+            const sortedMonths = Array.from(monthsSet).sort().reverse();
 
-            renderMuyuList();
-            renderStatsChart();
+            filterEl.innerHTML = sortedMonths.map(mKey => {
+                const [year, month] = mKey.split('-');
+                const label = (mKey === nowMonthKey) ? `${year}年${month}月 (當月)` : `${year}年${month}月`;
+                return `<option value="${mKey}">${label}</option>`;
+            }).join('') + `<option value="ALL">全部歷史月份</option>`;
+
+            // Default lock to current month
+            if (!filterEl.dataset.userSelected) {
+                filterEl.value = nowMonthKey;
+            }
         }
 
-        function spawnFloatHeart() {
-            const container = document.getElementById('muyuFloatContainer');
-            const el = document.createElement('div');
-            el.className = 'absolute text-rose-500 font-extrabold text-sm animate-float-heart flex items-center gap-1 drop-shadow-xs pointer-events-none';
-            el.innerHTML = '<i class="fa-solid fa-heart text-rose-500"></i> 思念 +1';
-            
-            const randomX = (Math.random() - 0.5) * 60;
-            el.style.left = `calc(50% + ${randomX}px)`;
-            el.style.top = '10px';
+        async function openReadLetterModal(letterId) {
+            state.activeReadingLetterId = letterId;
+            const modal = document.getElementById('readLetterModal');
+            const loading = document.getElementById('letterDetailLoading');
+            const body = document.getElementById('letterDetailBody');
+            const contentText = document.getElementById('readLetterContentText');
+            const senderText = document.getElementById('readLetterSenderText');
+            const heartsContainer = document.getElementById('readLetterHearts');
+            const imageWrapper = document.getElementById('readLetterImageWrapper');
+            const imageEl = document.getElementById('readLetterImageEl');
 
-            container.appendChild(el);
-            setTimeout(() => el.remove(), 1000);
-        }
+            modal.classList.remove('hidden');
+            loading.classList.remove('hidden');
+            body.classList.add('hidden');
+            imageWrapper.classList.add('hidden');
 
-        /* --- 相片選擇與自動壓縮微縮邏輯 --- */
-        function handleImageSelection(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+            const letter = state.letters.find(l => String(l.id) === String(letterId));
+            if (letter) {
+                const senderName = letter.sender === 'Me' ? (state.currentUser === 'Me' ? state.displayName : '秋刀魚') : (state.currentUser === 'Partner' ? state.displayName : '白鯧魚');
+                senderText.innerText = `來自 ${senderName} 的溫柔心意`;
 
-            document.getElementById('letterImageName').innerText = file.name;
+                let heartsHtml = '';
+                for (let i = 0; i < (letter.heartbeatRating || 5); i++) {
+                    heartsHtml += `<i class="fa-solid fa-heart mr-0.5"></i>`;
+                }
+                heartsContainer.innerHTML = heartsHtml;
 
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const img = new Image();
-                img.onload = function() {
-                    // 使用 Canvas 壓縮圖片，長寬限制在 800px 以內
-                    const canvas = document.createElement('canvas');
-                    const maxDim = 800;
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > height) {
-                        if (width > maxDim) {
-                            height *= maxDim / width;
-                            width = maxDim;
+                // Load detail from backend on-demand if missing image/full details
+                try {
+                    const res = await fetch(`${state.gasUrl}?action=getLetterDetail&letterId=${encodeURIComponent(letterId)}`, { redirect: 'follow' });
+                    const json = await res.json();
+                    
+                    if (json.status === 'success' && json.letter) {
+                        contentText.innerText = json.letter.letterContent || letter.letterContent || '無內文';
+                        if (json.letter.imageUrl) {
+                            imageEl.src = json.letter.imageUrl;
+                            imageWrapper.classList.remove('hidden');
                         }
                     } else {
-                        if (height > maxDim) {
-                            width *= maxDim / height;
-                            height = maxDim;
+                        contentText.innerText = letter.letterContent || '無內文';
+                        if (letter.imageUrl) {
+                            imageEl.src = letter.imageUrl;
+                            imageWrapper.classList.remove('hidden');
                         }
                     }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    // 轉換為輕量化 JPEG Base64
-                    state.currentImageBase64 = canvas.toDataURL('image/jpeg', 0.7);
-
-                    document.getElementById('imagePreviewEl').src = state.currentImageBase64;
-                    document.getElementById('imagePreviewBox').classList.remove('hidden');
-                };
-                img.src = evt.target.result;
-            };
-            reader.readAsDataURL(file);
+                } catch(e) {
+                    contentText.innerText = letter.letterContent || '無內文';
+                    if (letter.imageUrl) {
+                        imageEl.src = letter.imageUrl;
+                        imageWrapper.classList.remove('hidden');
+                    }
+                } finally {
+                    loading.classList.add('hidden');
+                    body.classList.remove('hidden');
+                }
+            }
         }
 
-        function clearSelectedImage() {
-            state.currentImageBase64 = '';
-            document.getElementById('letterImageInput').value = '';
-            document.getElementById('letterImageName').innerText = '未選擇照片';
-            document.getElementById('imagePreviewBox').classList.add('hidden');
-            document.getElementById('imagePreviewEl').src = '';
+        async function confirmReadCurrentLetter() {
+            if (!state.activeReadingLetterId) return;
+
+            const letter = state.letters.find(l => l.id === state.activeReadingLetterId);
+            if (letter) letter.isRead = true;
+
+            saveLocalState();
+            renderLettersList();
+            document.getElementById('readLetterModal').classList.add('hidden');
+
+            postToGas({ action: 'markLetterRead', letterId: state.activeReadingLetterId });
+            state.activeReadingLetterId = null;
+        }
+
+        function checkUnreadLetters() {
+            const unread = state.letters.find(l => l.recipient === state.currentUser && !l.isRead);
+            if (unread) {
+                openReadLetterModal(unread.id);
+            }
+        }
+
+        // --- Form Modal Handlers ---
+        function setupTagOptions() {
+            const container = document.getElementById('tagOptionsContainer');
+            if (!container) return;
+            container.innerHTML = PRESET_TAGS.map(tag => `
+                <label class="inline-flex items-center gap-1 bg-rose-50 border border-rose-100 text-rose-700 px-2.5 py-1 rounded-xl text-[11px] cursor-pointer hover:bg-rose-100">
+                    <input type="checkbox" name="logTag" value="${tag}" class="accent-rose-500 rounded">
+                    <span>${tag}</span>
+                </label>
+            `).join('');
+        }
+
+        function openLogModal() {
+            document.getElementById('logForm').reset();
+            document.getElementById('disapVal').innerText = '3';
+            document.getElementById('logModal').classList.remove('hidden');
+        }
+
+        function closeLogModal() {
+            document.getElementById('logModal').classList.add('hidden');
+        }
+
+        async function handleLogFormSubmit(e) {
+            e.preventDefault();
+            const eventVal = document.getElementById('logEvent').value.trim();
+            const feelingsVal = document.getElementById('logFeelings').value.trim();
+            const disapVal = parseInt(document.getElementById('logDisappointment').value);
+            const needsVal = document.getElementById('logNeeds').value.trim();
+
+            const checkedTags = Array.from(document.querySelectorAll('input[name="logTag"]:checked')).map(el => el.value);
+
+            const timestamp = new Date().toISOString();
+            const newLog = {
+                id: 'log_' + Date.now(),
+                user: state.currentUser,
+                timestamp: timestamp,
+                event: eventVal,
+                feelings: feelingsVal,
+                disappointment: disapVal,
+                needs: needsVal,
+                tags: checkedTags
+            };
+
+            state.logs.push(newLog);
+            state.lastResetTimestamp = new Date(timestamp).getTime();
+            saveLocalState();
+            renderAll();
+            closeLogModal();
+
+            postToGas({ action: 'addLog', data: newLog });
         }
 
         function openWriteLetterModal() {
@@ -1078,26 +1297,62 @@
 
         function setHeartRating(val) {
             state.currentHeartRating = val;
-            const buttons = document.querySelectorAll('#heartRatingContainer button');
-            buttons.forEach((btn, idx) => {
-                if (idx < val) {
-                    btn.className = "text-xl text-rose-500 rating-heart";
-                } else {
-                    btn.className = "text-xl text-slate-200 rating-heart";
-                }
+            const hearts = document.querySelectorAll('.rating-heart');
+            hearts.forEach((h, idx) => {
+                if (idx < val) h.className = "text-xl text-rose-500 rating-heart";
+                else h.className = "text-xl text-slate-200 rating-heart";
             });
+        }
+
+        function handleImageSelection(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('letterImageName').innerText = file.name;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const maxBound = 800;
+
+                    if (width > height && width > maxBound) {
+                        height = Math.round((height * maxBound) / width);
+                        width = maxBound;
+                    } else if (height > maxBound) {
+                        width = Math.round((width * maxBound) / height);
+                        height = maxBound;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    state.currentImageBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                    document.getElementById('imagePreviewEl').src = state.currentImageBase64;
+                    document.getElementById('imagePreviewBox').classList.remove('hidden');
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearSelectedImage() {
+            state.currentImageBase64 = '';
+            document.getElementById('letterImageInput').value = '';
+            document.getElementById('letterImageName').innerText = '未選擇照片';
+            document.getElementById('imagePreviewBox').classList.add('hidden');
         }
 
         async function handleLetterFormSubmit(e) {
             e.preventDefault();
             const content = document.getElementById('letterContent').value.trim();
-            if (!content) return;
-
-            const submitBtn = document.getElementById('submitLetterBtn');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 送出中...`;
-
             const recipient = state.currentUser === 'Me' ? 'Partner' : 'Me';
+
             const newLetter = {
                 id: 'letter_' + Date.now(),
                 sender: state.currentUser,
@@ -1105,298 +1360,21 @@
                 letterContent: content,
                 heartbeatRating: state.currentHeartRating,
                 timestamp: new Date().toISOString(),
-                isRead: false,
                 hasImage: !!state.currentImageBase64,
-                imageUrl: state.currentImageBase64 // 即時寫入後端
+                imageUrl: state.currentImageBase64
             };
 
-            state.letters.unshift(newLetter);
+            state.letters.push(newLetter);
             saveLocalState();
-
-            await postToGas({ action: 'addLetter', data: newLetter });
-
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = `秘密送出情書`;
-
+            renderLettersList();
             closeLetterModal();
-            renderLettersList();
+
+            postToGas({ action: 'addLetter', data: newLetter });
         }
 
-        function checkUnreadLetters() {
-            if (!state.currentUser) return;
-
-            const unread = state.letters.find(l => 
-                l.recipient === state.currentUser && (!l.isRead || String(l.isRead).toUpperCase() === 'FALSE')
-            );
-
-            if (unread) {
-                openSpecificLetterModal(unread.id);
-            }
-        }
-
-        async function confirmReadCurrentLetter() {
-            if (!state.activeReadingLetterId) return;
-
-            const l = state.letters.find(item => String(item.id) === String(state.activeReadingLetterId));
-            if (l) l.isRead = true;
-
-            saveLocalState();
-            renderLettersList();
-            document.getElementById('readLetterModal').classList.add('hidden');
-
-            postToGas({ action: 'markLetterRead', letterId: state.activeReadingLetterId });
-            state.activeReadingLetterId = null;
-        }
-
-        function renderLettersList() {
-            const container = document.getElementById('loveLettersContainer');
-            container.innerHTML = '';
-
-            const myReceivedLetters = state.letters.filter(l => l.recipient === state.currentUser);
-
-            if (myReceivedLetters.length === 0) {
-                container.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs bg-rose-50/50 rounded-2xl border border-rose-100">信箱裡暫時沒有給您的情書，寫一封給對方吧！</div>`;
-                return;
-            }
-
-            // 【BUG 修正 1】依時間降序排序：最新的情書放在最上面
-            const sortedLetters = [...myReceivedLetters].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            const totalCount = myReceivedLetters.length;
-
-            sortedLetters.forEach((letter) => {
-                const senderName = letter.sender === 'Me' ? '秋刀魚' : '白鯧魚';
-                const timeStr = new Date(letter.timestamp).toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-                const isRead = (letter.isRead === true || String(letter.isRead).toUpperCase() === 'TRUE');
-
-                // 計算原始發佈順序編號：按照所有收到的信總數，依原始發送時間推算第幾封
-                const chronologicalIndex = myReceivedLetters.slice().sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)).findIndex(l => String(l.id) === String(letter.id));
-                const letterNumber = chronologicalIndex !== -1 ? chronologicalIndex + 1 : totalCount;
-
-                const hasPhoto = letter.hasImage || !!letter.imageUrl;
-
-                let hearts = '';
-                const cnt = parseInt(letter.heartbeatRating || 5);
-                for(let i=0; i<cnt; i++) hearts += '<i class="fa-solid fa-heart text-rose-500"></i>';
-
-                const card = document.createElement('div');
-                card.onclick = () => openSpecificLetterModal(letter.id);
-                card.className = "bg-rose-50/80 hover:bg-rose-100/80 p-3 rounded-2xl border border-rose-200/80 space-y-1.5 text-xs relative cursor-pointer transition active:scale-98 shadow-xs";
-                card.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-2">
-                            <span class="font-extrabold text-rose-700 bg-white px-2.5 py-0.5 rounded-full border border-rose-200 shadow-2xs">
-                                第 ${letterNumber} 封情書
-                            </span>
-                            ${hasPhoto ? '<span class="text-[10px] text-pink-600 bg-pink-100 px-1.5 py-0.5 rounded font-semibold"><i class="fa-solid fa-camera mr-0.5"></i>有照片</span>' : ''}
-                            <span class="text-[10px] text-slate-500"><i class="fa-solid fa-user-heart mr-1 text-rose-400"></i>來自 ${senderName}</span>
-                        </div>
-                        <div class="flex items-center gap-1.5">
-                            <div class="text-[10px]">${hearts}</div>
-                            ${isRead ? '<span class="text-[9px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold border border-emerald-200">已讀</span>' : '<span class="text-[9px] text-rose-600 bg-rose-200 px-2 py-0.5 rounded-full font-semibold animate-pulse">新信</span>'}
-                        </div>
-                    </div>
-                    <div class="flex justify-between items-center text-[11px] text-slate-500 pt-1">
-                        <span class="text-rose-600/90 font-medium flex items-center gap-1">
-                            <i class="fa-solid fa-envelope-open-text"></i> 點擊拆開閱讀內容與照片...
-                        </span>
-                        <span class="text-[10px] text-slate-400">${timeStr}</span>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        /* --- 按需延遲加載 (Lazy Loading) 點開情書才獨立載入照片與內文 --- */
-        async function openSpecificLetterModal(letterId) {
-            const letterOverview = state.letters.find(l => String(l.id) === String(letterId));
-            if (!letterOverview) return;
-
-            state.activeReadingLetterId = letterOverview.id;
-            const senderName = letterOverview.sender === 'Me' ? '秋刀魚' : '白鯧魚';
-            document.getElementById('readLetterSenderText').innerText = `來自 ${senderName} 的情書`;
-
-            let hearts = '';
-            const cnt = parseInt(letterOverview.heartbeatRating || 5);
-            for(let i=0; i<cnt; i++) hearts += '<i class="fa-solid fa-heart mr-0.5"></i>';
-            document.getElementById('readLetterHearts').innerHTML = hearts;
-
-            // 1. 先重置並顯示 Loading 狀態
-            document.getElementById('letterDetailLoading').classList.remove('hidden');
-            document.getElementById('letterDetailBody').classList.add('hidden');
-            document.getElementById('readLetterImageWrapper').classList.add('hidden');
-            document.getElementById('readLetterImageEl').src = '';
-            document.getElementById('readLetterModal').classList.remove('hidden');
-
-            // 2. 獨立發出請求，點開時才遠端抓取詳細照片與內容 (Lazy Load)
-            try {
-                const res = await fetch(`${state.gasUrl}?action=getLetterDetail&letterId=${letterOverview.id}`, { redirect: 'follow' });
-                const json = await res.json();
-
-                if (json.status === 'success' && json.letter) {
-                    const detail = json.letter;
-                    document.getElementById('readLetterContentText').innerText = detail.letterContent;
-
-                    if (detail.imageUrl && detail.imageUrl.trim().length > 0) {
-                        document.getElementById('readLetterImageEl').src = detail.imageUrl;
-                        document.getElementById('readLetterImageWrapper').classList.remove('hidden');
-                    }
-                } else {
-                    document.getElementById('readLetterContentText').innerText = letterOverview.letterContent || "讀取內文失敗，請檢查網路連線。";
-                }
-            } catch(e) {
-                document.getElementById('readLetterContentText').innerText = letterOverview.letterContent || "載入失敗，顯示快取預覽。";
-            } finally {
-                // 3. 隱藏 Loading，顯示詳細內容
-                document.getElementById('letterDetailLoading').classList.add('hidden');
-                document.getElementById('letterDetailBody').classList.remove('hidden');
-            }
-        }
-
-        function openLogModal() {
-            document.getElementById('logForm').reset();
-            setupTagChips();
-            document.getElementById('disapVal').innerText = 3;
-            document.getElementById('logModal').classList.remove('hidden');
-        }
-
-        function closeLogModal() {
-            document.getElementById('logModal').classList.add('hidden');
-        }
-
-        function handleLogFormSubmit(e) {
-            e.preventDefault();
-            if (!state.currentUser) return;
-
-            const eventVal = document.getElementById('logEvent').value;
-            const feelingsVal = document.getElementById('logFeelings').value;
-            const disappointmentVal = parseInt(document.getElementById('logDisappointment').value);
-            const needsVal = document.getElementById('logNeeds').value;
-
-            const selectedTags = [];
-            document.querySelectorAll('#tagOptionsContainer input[type="checkbox"]:checked').forEach(cb => {
-                selectedTags.push(cb.value);
-            });
-
-            const nowIso = new Date().toISOString();
-            const newLog = {
-                id: 'log_' + Date.now(),
-                user: state.currentUser,
-                timestamp: nowIso,
-                event: eventVal,
-                feelings: feelingsVal,
-                disappointment: disappointmentVal,
-                needs: needsVal,
-                tags: selectedTags
-            };
-
-            state.logs.unshift(newLog);
-            state.lastResetTimestamp = new Date(nowIso).getTime();
-
-            postToGas({ action: 'addLog', data: newLog });
-
-            saveLocalState();
-            closeLogModal();
-            renderAll();
-        }
-
-        function renderAll() {
-            renderLogsList();
-            renderMuyuList();
-            renderLettersList();
-            renderStatsChart();
-            updateTimerDisplay();
-        }
-
-        function renderLogsList() {
-            const container = document.getElementById('emotionListContainer');
-            container.innerHTML = '';
-
-            if (state.logs.length === 0) {
-                container.innerHTML = `<div class="text-center py-10 text-slate-400 text-xs bg-white rounded-2xl border border-rose-100 p-6"><i class="fa-solid fa-feather text-3xl mb-2 text-rose-200"></i><p>尚無情緒感受紀錄，祝願歲月靜好。</p></div>`;
-                return;
-            }
-
-            // 依時間降序排序：最新的情緒感受紀錄放在最上面
-            const sortedLogs = [...state.logs].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-            sortedLogs.forEach(log => {
-                const isMe = log.user === 'Me';
-                const displayName = isMe ? (state.currentUser === 'Me' ? state.displayName : '秋刀魚') : (state.currentUser === 'Partner' ? state.displayName : '白鯧魚');
-                const userBadge = `<span class="${isMe ? 'bg-rose-100 text-rose-700' : 'bg-pink-100 text-pink-700'} font-bold px-2 py-0.5 rounded text-[10px]">${displayName}</span>`;
-
-                const timeStr = new Date(log.timestamp).toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-                const tagsHtml = (log.tags || []).map(t => `<span class="bg-rose-50 text-rose-600 px-2 py-0.5 rounded text-[10px] font-medium border border-rose-100"># ${t}</span>`).join(' ');
-
-                // 檢查是否可以回覆（自己不能回覆自己發出的日誌，且需在登入狀態）
-                const canReply = state.currentUser && (log.user !== state.currentUser);
-                const hasReply = log.replyContent && log.replyContent.trim().length > 0;
-                const replierName = log.replier === 'Me' ? (state.currentUser === 'Me' ? state.displayName : '秋刀魚') : (state.currentUser === 'Partner' ? state.displayName : '白鯧魚');
-                const replyTimeStr = log.replyTimestamp ? new Date(log.replyTimestamp).toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
-
-                const card = document.createElement('div');
-                card.className = "bg-white p-3.5 rounded-2xl border border-rose-100 shadow-2xs space-y-2 relative";
-                card.innerHTML = `
-                    <div class="flex justify-between items-center border-b border-rose-50 pb-2">
-                        <div class="flex items-center gap-1.5">
-                            ${userBadge}
-                            <span class="text-[11px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i>${timeStr}</span>
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <span class="text-[10px] text-rose-600 font-semibold bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100">
-                                失望 ${log.disappointment} 分
-                            </span>
-                            <span class="text-[10px] text-slate-400 font-medium bg-slate-50 px-1.5 py-0.5 rounded">
-                                <i class="fa-solid fa-lock text-[9px] mr-1"></i>已留存
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="space-y-1.5 text-xs">
-                        <div>
-                            <span class="text-slate-400 font-medium block text-[10px]">事件簡述:</span>
-                            <p class="text-slate-800 leading-snug font-medium">${escapeHtml(log.event)}</p>
-                        </div>
-                        <div>
-                            <span class="text-slate-400 font-medium block text-[10px]">我的感受:</span>
-                            <p class="text-slate-700 leading-snug bg-rose-50/40 p-2 rounded-xl border border-rose-100/40">${escapeHtml(log.feelings)}</p>
-                        </div>
-                        ${log.needs ? `
-                            <div>
-                                <span class="text-slate-400 font-medium block text-[10px]">希望對方知道:</span>
-                                <p class="text-rose-900 bg-pink-50/50 p-2 rounded-xl border border-pink-100/50">${escapeHtml(log.needs)}</p>
-                            </div>
-                        ` : ''}
-                    </div>
-
-                    ${tagsHtml ? `<div class="pt-1 flex flex-wrap gap-1">${tagsHtml}</div>` : ''}
-
-                    <!-- 回覆與反省區塊 -->
-                    <div class="pt-2 border-t border-rose-50">
-                        ${hasReply ? `
-                            <div class="bg-gradient-to-r from-pink-50 to-rose-50 p-2.5 rounded-xl border border-pink-100/80 space-y-1 text-xs">
-                                <div class="flex justify-between items-center text-[10px]">
-                                    <span class="font-bold text-rose-700 flex items-center gap-1">
-                                        <i class="fa-solid fa-hand-holding-heart text-pink-500"></i> ${replierName} 的溫柔回應與反省：
-                                    </span>
-                                    <span class="text-slate-400">${replyTimeStr}</span>
-                                </div>
-                                <p class="text-slate-700 whitespace-pre-wrap leading-relaxed">${escapeHtml(log.replyContent)}</p>
-                            </div>
-                        ` : (canReply ? `
-                            <button onclick="openReplyModal('${log.id}', \`${escapeHtml(log.feelings)}\`)" class="w-full py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-medium rounded-xl border border-rose-200/80 transition flex items-center justify-center gap-1.5">
-                                <i class="fa-solid fa-reply"></i> 給予對方溫柔回應與反省
-                            </button>
-                        ` : '')}
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        /* --- 新增：回覆 Modal 邏輯 --- */
-        function openReplyModal(logId, feelingsText) {
+        function openReplyModal(logId, feelingPreview) {
             document.getElementById('replyTargetLogId').value = logId;
-            document.getElementById('replyTargetFeelingPreview').innerText = feelingsText;
+            document.getElementById('replyTargetFeelingPreview').innerText = `"${feelingPreview}"`;
             document.getElementById('replyContentInput').value = '';
             document.getElementById('replyModal').classList.remove('hidden');
         }
@@ -1410,133 +1388,167 @@
             const logId = document.getElementById('replyTargetLogId').value;
             const replyContent = document.getElementById('replyContentInput').value.trim();
 
-            if (!logId || !replyContent) return;
-
-            const submitBtn = document.getElementById('submitReplyBtn');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 送出中...`;
-
-            // 更新本地數據
-            const targetLog = state.logs.find(l => String(l.id) === String(logId));
-            if (targetLog) {
-                targetLog.replyContent = replyContent;
-                targetLog.replyTimestamp = new Date().toISOString();
-                targetLog.replier = state.currentUser;
+            const log = state.logs.find(l => l.id === logId);
+            if (log) {
+                log.replyContent = replyContent;
+                log.replier = state.currentUser;
+                log.replyTimestamp = new Date().toISOString();
             }
 
             saveLocalState();
             renderLogsList();
             closeReplyModal();
 
-            // 同步至 GAS 後端
-            await postToGas({
+            postToGas({
                 action: 'replyLog',
                 logId: logId,
                 replyContent: replyContent,
                 replier: state.currentUser
             });
-
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = `送出溫柔回應`;
         }
 
-        function renderMuyuList() {
-            const container = document.getElementById('muyuListContainer');
+        // --- Woodblock Click & Batch Logic ---
+        function handleMuyuClick() {
+            const now = Date.now();
+            const container = document.getElementById('muyuFloatContainer');
+            
+            // 視覺動畫效果
+            if (container) {
+                const heart = document.createElement('div');
+                heart.className = 'absolute text-rose-500 font-bold text-lg pointer-events-none animate-float-heart';
+                heart.innerHTML = `<i class="fa-solid fa-heart"></i> +1`;
+                heart.style.left = `${Math.random() * 40 - 20}px`;
+                container.appendChild(heart);
+                setTimeout(() => heart.remove(), 1000);
+            }
+
+            // 5秒批次判斷
+            if (!state.muyuBatch.startTime || (now - state.muyuBatch.lastClickTime > state.muyuInterval)) {
+                // 如果前一批次有次數，先送出
+                if (state.muyuBatch.count > 0) {
+                    flushMuyuBatch();
+                }
+                state.muyuBatch.startTime = new Date().toISOString();
+                state.muyuBatch.count = 1;
+            } else {
+                state.muyuBatch.count += 1;
+            }
+
+            state.muyuBatch.lastClickTime = now;
+            document.getElementById('currentBatchCount').innerText = state.muyuBatch.count;
+
+            if (state.muyuBatch.timer) clearTimeout(state.muyuBatch.timer);
+            state.muyuBatch.timer = setTimeout(() => {
+                flushMuyuBatch();
+            }, state.muyuInterval);
+        }
+
+        function flushMuyuBatch() {
+            if (state.muyuBatch.count === 0) return;
+
+            const newMiss = {
+                id: 'miss_' + Date.now(),
+                user: state.currentUser,
+                timestamp: state.muyuBatch.startTime,
+                count: state.muyuBatch.count
+            };
+
+            state.misses.push(newMiss);
+            saveLocalState();
+            renderMuyuList();
+
+            postToGas({ action: 'addMiss', data: newMiss });
+
+            state.muyuBatch.count = 0;
+            state.muyuBatch.startTime = null;
+            document.getElementById('currentBatchCount').innerText = '0';
+        }
+
+        // --- Emotion Logs List Renderer ---
+        function renderLogsList() {
+            const container = document.getElementById('emotionListContainer');
+            if (!container) return;
+
             container.innerHTML = '';
 
-            let totalMe = 0;
-            let totalPartner = 0;
-
-            state.misses.forEach(m => {
-                if (m.user === 'Me') totalMe += (m.count || 1);
-                else totalPartner += (m.count || 1);
-            });
-
-            document.getElementById('muyuTotalMe').innerText = `${totalMe} 次`;
-            document.getElementById('muyuTotalPartner').innerText = `${totalPartner} 次`;
-            document.getElementById('muyuTotalBatches').innerText = `${state.misses.length} 筆`;
-
-            if (state.misses.length === 0) {
-                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs bg-white rounded-2xl border border-rose-100">尚無想念紀錄，點擊累積愛意。</div>`;
+            if (!state.logs || state.logs.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs bg-white rounded-2xl border border-rose-100">尚無情緒日誌紀錄。平穩相處中 💕</div>`;
                 return;
             }
 
-            // 【新功能】依時間降序排序：最新的想念紀錄放在最上面
-            const sortedMisses = [...state.misses].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            // 按時間降序排序 (最新在最上面)
+            const sortedLogs = [...state.logs].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-            sortedMisses.forEach(m => {
-                const userText = m.user === 'Me' ? '秋刀魚' : '白鯧魚';
-                const timeStr = new Date(m.timestamp).toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+            sortedLogs.forEach(log => {
+                const isMine = log.user === state.currentUser;
+                const authorName = log.user === 'Me' ? (state.currentUser === 'Me' ? state.displayName : '秋刀魚') : (state.currentUser === 'Partner' ? state.displayName : '白鯧魚');
+                const timeStr = new Date(log.timestamp).toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
 
-                const row = document.createElement('div');
-                row.className = "flex justify-between items-center bg-white px-3.5 py-2 rounded-xl border border-rose-100 text-xs shadow-2xs";
-                row.innerHTML = `
-                    <div class="flex items-center gap-1.5">
-                        <i class="fa-solid fa-heart text-rose-500"></i>
-                        <span class="font-bold ${m.user === 'Me' ? 'text-rose-600' : 'text-pink-600'}">${userText}</span>
-                        <span class="text-slate-400 text-[10px]">${timeStr}</span>
-                    </div>
-                    <div class="font-extrabold text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full text-[11px]">
-                        敲擊 ${m.count} 下
-                    </div>
-                `;
-                container.appendChild(row);
-            });
-        }
-
-        function renderStatsChart() {
-            let maxCalmMs = Date.now() - state.lastResetTimestamp;
-            const sortedLogs = [...state.logs].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-            for (let i = 1; i < sortedLogs.length; i++) {
-                const diff = new Date(sortedLogs[i].timestamp) - new Date(sortedLogs[i-1].timestamp);
-                if (diff > maxCalmMs) maxCalmMs = diff;
-            }
-
-            const days = Math.floor(maxCalmMs / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((maxCalmMs / (1000 * 60 * 60)) % 24);
-            document.getElementById('statMaxCalm').innerText = `${days}天 ${hours}小時`;
-
-            const totalMiss = state.misses.reduce((acc, curr) => acc + (curr.count || 1), 0);
-            document.getElementById('statTotalMissCount').innerText = `${totalMiss} 次`;
-
-            // Total Letters Count and Total Heart Rating Count
-            const totalLetters = state.letters.length;
-            const totalHearts = state.letters.reduce((acc, curr) => acc + parseInt(curr.heartbeatRating || 5), 0);
-            document.getElementById('statTotalLettersCount').innerText = `${totalLetters} 封`;
-            document.getElementById('statTotalHeartsCount').innerText = `${totalHearts} 顆心`;
-
-            const tagCounts = {};
-            PRESET_TAGS.forEach(t => tagCounts[t] = 0);
-
-            state.logs.forEach(log => {
+                let tagsHtml = '';
                 if (Array.isArray(log.tags)) {
-                    log.tags.forEach(t => { tagCounts[t] = (tagCounts[t] || 0) + 1; });
+                    tagsHtml = log.tags.map(t => `<span class="bg-rose-50 text-rose-600 px-2 py-0.5 rounded-md text-[10px] font-medium border border-rose-100">${t}</span>`).join(' ');
                 }
-            });
 
-            const ctx = document.getElementById('tagsChart').getContext('2d');
-            if (chartInstance) chartInstance.destroy();
-
-            chartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(tagCounts),
-                    datasets: [{
-                        label: '出現次數',
-                        data: Object.values(tagCounts),
-                        backgroundColor: '#f43f5e',
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } },
-                        x: { ticks: { font: { size: 9 } } }
-                    }
+                // 回覆區塊
+                let replySection = '';
+                if (log.replyContent) {
+                    const replierName = log.replier === 'Me' ? (state.currentUser === 'Me' ? state.displayName : '秋刀魚') : (state.currentUser === 'Partner' ? state.displayName : '白鯧魚');
+                    const replyTimeStr = new Date(log.replyTimestamp).toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+                    replySection = `
+                        <div class="mt-2.5 pt-2 border-t border-rose-100 bg-rose-50/50 p-2.5 rounded-xl text-xs space-y-1">
+                            <div class="flex justify-between items-center text-[10px] text-rose-700 font-semibold">
+                                <span><i class="fa-solid fa-heart-pulse mr-1"></i>${replierName} 的溫柔回應與反省：</span>
+                                <span class="text-slate-400 font-normal">${replyTimeStr}</span>
+                            </div>
+                            <p class="text-slate-700 text-xs whitespace-pre-wrap leading-relaxed select-text">${log.replyContent}</p>
+                        </div>
+                    `;
+                } else if (!isMine) {
+                    // 對方寫的，且尚未回覆
+                    replySection = `
+                        <div class="mt-2.5 pt-2 border-t border-slate-100 text-right">
+                            <button onclick="openReplyModal('${log.id}', \`${log.feelings.replace(/`/g, '')}\`)" class="px-3 py-1 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl text-[11px] font-medium shadow-xs hover:opacity-95 transition">
+                                <i class="fa-solid fa-hand-holding-heart mr-1"></i>給予溫柔回應與反省
+                            </button>
+                        </div>
+                    `;
                 }
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-2xl border border-rose-100 shadow-2xs space-y-2 text-xs relative overflow-hidden";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-slate-800 text-xs">${authorName}</span>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full ${isMine ? 'bg-slate-100 text-slate-600' : 'bg-rose-100 text-rose-700 font-semibold'}">${isMine ? '我的記錄' : '對方的委屈'}</span>
+                        </div>
+                        <span class="text-[10px] text-slate-400">${timeStr}</span>
+                    </div>
+
+                    <div class="space-y-1">
+                        <span class="text-[10px] text-slate-400 block font-medium">發生的事件：</span>
+                        <p class="text-slate-800 font-semibold leading-snug select-text">${log.event}</p>
+                    </div>
+
+                    <div class="space-y-1 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                        <span class="text-[10px] text-rose-500 font-medium block">真實感受 (我覺得...)：</span>
+                        <p class="text-slate-700 whitespace-pre-wrap leading-relaxed select-text">${log.feelings}</p>
+                    </div>
+
+                    <div class="flex justify-between items-center text-[11px] pt-1">
+                        <span class="text-slate-500">失望分數：<strong class="text-rose-600 font-extrabold text-xs">${log.disappointment}</strong> / 5</span>
+                        <div class="flex gap-1">${tagsHtml}</div>
+                    </div>
+
+                    ${log.needs ? `
+                        <div class="text-[11px] text-slate-600 bg-amber-50/60 p-2 rounded-xl border border-amber-100">
+                            <span class="font-semibold text-amber-800">期待對方知道：</span>${log.needs}
+                        </div>
+                    ` : ''}
+
+                    ${replySection}
+                `;
+                container.appendChild(card);
             });
         }
 
@@ -1547,125 +1559,65 @@
             const viewLog = document.getElementById('actionViewLog');
 
             if (tab === 'miss') {
-                btnMiss.className = "flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-rose-700 bg-white shadow-xs";
+                btnMiss.className = "flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-rose-700 bg-white shadow-xs font-bold";
                 btnLog.className = "flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-500 hover:text-rose-700";
                 viewMiss.classList.remove('hidden');
                 viewLog.classList.add('hidden');
             } else {
-                btnLog.className = "flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-rose-700 bg-white shadow-xs";
+                btnLog.className = "flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-pink-700 bg-white shadow-xs font-bold";
                 btnMiss.className = "flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-500 hover:text-rose-700";
                 viewLog.classList.remove('hidden');
                 viewMiss.classList.add('hidden');
             }
         }
 
-        function switchMainNav(nav) {
-            ['home', 'logs', 'stats', 'settings'].forEach(n => {
-                const sec = document.getElementById('sec-' + n);
-                const btn = document.getElementById('nav' + n.charAt(0).toUpperCase() + n.slice(1));
-                if (n === nav) {
-                    sec.classList.remove('hidden');
-                    btn.className = "py-1.5 px-1 text-rose-600 font-bold flex flex-col items-center gap-0.5";
-                } else {
-                    sec.classList.add('hidden');
-                    btn.className = "py-1.5 px-1 text-slate-400 hover:text-slate-800 flex flex-col items-center gap-0.5";
-                }
-            });
-            if (nav === 'stats') renderStatsChart();
-        }
-
         function switchLogTab(tab) {
-            const btnLog = document.getElementById('tabBtnLog');
+            const btnEmotion = document.getElementById('tabBtnLog');
             const btnMiss = document.getElementById('tabBtnMiss');
-            const contentLog = document.getElementById('tabContentLog');
+            const contentEmotion = document.getElementById('tabContentLog');
             const contentMiss = document.getElementById('tabContentMiss');
 
             if (tab === 'emotion') {
-                btnLog.className = "flex-1 py-2.5 rounded-xl font-bold transition-all text-rose-700 bg-white shadow-xs flex items-center justify-center gap-1.5";
+                btnEmotion.className = "flex-1 py-2.5 rounded-xl font-bold transition-all text-rose-700 bg-white shadow-xs flex items-center justify-center gap-1.5";
                 btnMiss.className = "flex-1 py-2.5 rounded-xl transition-all text-slate-500 hover:text-rose-700 flex items-center justify-center gap-1.5";
-                contentLog.classList.remove('hidden');
+                contentEmotion.classList.remove('hidden');
                 contentMiss.classList.add('hidden');
             } else {
-                btnMiss.className = "flex-1 py-2.5 rounded-xl font-bold transition-all text-rose-700 bg-white shadow-xs flex items-center justify-center gap-1.5";
-                btnLog.className = "flex-1 py-2.5 rounded-xl transition-all text-slate-500 hover:text-rose-700 flex items-center justify-center gap-1.5";
+                btnMiss.className = "flex-1 py-2.5 rounded-xl font-bold transition-all text-pink-700 bg-white shadow-xs flex items-center justify-center gap-1.5";
+                btnEmotion.className = "flex-1 py-2.5 rounded-xl transition-all text-slate-500 hover:text-rose-700 flex items-center justify-center gap-1.5";
                 contentMiss.classList.remove('hidden');
-                contentLog.classList.add('hidden');
-            }
-        }
-
-        function setupTagChips() {
-            const container = document.getElementById('tagOptionsContainer');
-            container.innerHTML = '';
-            PRESET_TAGS.forEach(tag => {
-                const label = document.createElement('label');
-                label.className = 'cursor-pointer select-none';
-                label.innerHTML = `
-                    <input type="checkbox" value="${tag}" class="hidden peer">
-                    <span class="px-2.5 py-1 rounded-lg border border-slate-200 text-[11px] text-slate-600 peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-rose-500 transition inline-block">
-                        ${tag}
-                    </span>
-                `;
-                container.appendChild(label);
-            });
-        }
-
-        function saveLocalState() {
-            localStorage.setItem('app_emotion_state', JSON.stringify({
-                lastResetTimestamp: state.lastResetTimestamp,
-                muyuInterval: state.muyuInterval,
-                logs: state.logs,
-                misses: state.misses,
-                letters: state.letters
-            }));
-        }
-
-        function loadLocalState() {
-            const saved = localStorage.getItem('app_emotion_state');
-            if (saved) {
-                try {
-                    const parsed = JSON.parse(saved);
-                    state.lastResetTimestamp = parsed.lastResetTimestamp || Date.now();
-                    state.muyuInterval = 5000;
-                    state.logs = parsed.logs || [];
-                    state.misses = parsed.misses || [];
-                    state.letters = parsed.letters || [];
-                } catch(e) {}
+                contentEmotion.classList.add('hidden');
             }
         }
 
         function recalculateResetTimeFromLogs() {
+            // 預設以 2026-10-14 為基準起算時間
+            let maxTs = BASE_CALM_START_TIMESTAMP;
+
             if (state.logs && state.logs.length > 0) {
-                const timestamps = state.logs.map(l => new Date(l.timestamp).getTime()).filter(t => !isNaN(t));
-                if (timestamps.length > 0) {
-                    state.lastResetTimestamp = Math.max(...timestamps);
-                }
+                state.logs.forEach(l => {
+                    const ts = new Date(l.timestamp).getTime();
+                    // 僅當日誌時間晚於 2026-10-14 時，才採納該筆日誌作為新的重置起算點
+                    if (ts > maxTs) maxTs = ts;
+                });
             }
+            state.lastResetTimestamp = maxTs;
         }
 
-        async function syncWithGas() {
-            const textEl = document.getElementById('syncStatusText');
-            textEl.innerHTML = `<i class="fa-solid fa-arrows-rotate animate-spin mr-1"></i> 同步中...`;
+        function updateTimerDisplay() {
+            const timerEl = document.getElementById('timerDisplay');
+            if (!timerEl) return;
 
-            try {
-                const res = await fetch(`${state.gasUrl}?action=readAll`, { redirect: 'follow' });
-                const json = await res.json();
+            const now = Date.now();
+            const diffMs = Math.max(0, now - state.lastResetTimestamp);
 
-                if (json.status === 'success') {
-                    if (json.logs) state.logs = json.logs;
-                    if (json.misses) state.misses = json.misses;
-                    if (json.letters) state.letters = json.letters;
-                    
-                    recalculateResetTimeFromLogs();
-                    saveLocalState();
-                    renderAll();
-                    checkUnreadLetters();
-                    textEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> 同步成功`;
-                } else {
-                    textEl.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 mr-1"></i> 同步失敗`;
-                }
-            } catch(err) {
-                textEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i> 本地模式`;
-            }
+            const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+            const pad = (n) => String(n).padStart(2, '0');
+            timerEl.innerText = `${pad(days)}天 ${pad(hours)}時 ${pad(mins)}分 ${pad(secs)}秒`;
         }
 
         async function postToGas(payload) {
@@ -1676,12 +1628,109 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-            } catch(e) {}
+            } catch(e) {
+                console.warn("GAS Post warning:", e);
+            }
         }
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        // --- Statistics & Chart Rendering ---
+        function renderStatsChart() {
+            // 1. 計算雙方想念總數
+            let totalMiss = 0;
+            state.misses.forEach(m => totalMiss += (m.count || 1));
+            const statMissEl = document.getElementById('statTotalMissCount');
+            if (statMissEl) statMissEl.innerText = `${totalMiss} 次`;
+
+            // 2. 計算甜蜜情書封數與愛心總數
+            let totalLetters = state.letters.length;
+            let totalHearts = 0;
+            state.letters.forEach(l => totalHearts += (l.heartbeatRating || 5));
+
+            const statLettersEl = document.getElementById('statTotalLettersCount');
+            const statHeartsEl = document.getElementById('statTotalHeartsCount');
+            if (statLettersEl) statLettersEl.innerText = `${totalLetters} 封`;
+            if (statHeartsEl) statHeartsEl.innerText = `${totalHearts} 顆心`;
+
+            // 3. 計算歷史最長平穩相處時長
+            let maxCalmMs = 0;
+            if (state.logs && state.logs.length > 0) {
+                const sortedLogs = [...state.logs]
+                    .filter(l => new Date(l.timestamp).getTime() >= BASE_CALM_START_TIMESTAMP)
+                    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                
+                let prevTime = BASE_CALM_START_TIMESTAMP;
+
+                if (sortedLogs.length > 0) {
+                    for (let i = 0; i < sortedLogs.length; i++) {
+                        const currentTime = new Date(sortedLogs[i].timestamp).getTime();
+                        const diff = currentTime - prevTime;
+                        if (diff > maxCalmMs) maxCalmMs = diff;
+                        prevTime = currentTime;
+                    }
+                    const nowDiff = Date.now() - prevTime;
+                    if (nowDiff > maxCalmMs) maxCalmMs = nowDiff;
+                } else {
+                    maxCalmMs = Date.now() - BASE_CALM_START_TIMESTAMP;
+                }
+            } else {
+                maxCalmMs = Date.now() - BASE_CALM_START_TIMESTAMP;
+            }
+
+            const days = Math.floor(maxCalmMs / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((maxCalmMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const maxCalmEl = document.getElementById('statMaxCalm');
+            if (maxCalmEl) maxCalmEl.innerText = `${String(days).padStart(2, '0')}天 ${String(hours).padStart(2, '0')}時`;
+
+            // 4. 統計情緒標籤分類長條圖 (中立不區分個人)
+            const tagCounts = {};
+            PRESET_TAGS.forEach(t => tagCounts[t] = 0);
+
+            state.logs.forEach(log => {
+                if (Array.isArray(log.tags)) {
+                    log.tags.forEach(t => {
+                        if (tagCounts[t] !== undefined) tagCounts[t]++;
+                        else tagCounts[t] = 1;
+                    });
+                }
+            });
+
+            const ctx = document.getElementById('tagsChart');
+            if (!ctx) return;
+
+            if (state.chartInstance) {
+                state.chartInstance.destroy();
+            }
+
+            state.chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(tagCounts),
+                    datasets: [{
+                        label: '出現次數',
+                        data: Object.values(tagCounts),
+                        backgroundColor: 'rgba(244, 63, 94, 0.65)',
+                        borderColor: 'rgba(225, 29, 72, 1)',
+                        borderWidth: 1.5,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1, precision: 0 }
+                        },
+                        x: {
+                            ticks: { font: { size: 10 } }
+                        }
+                    }
+                }
+            });
         }
     </script>
 </body>
