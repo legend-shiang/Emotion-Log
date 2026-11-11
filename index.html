@@ -109,6 +109,45 @@
         .love-celebration-panel { animation: lovePop .65s cubic-bezier(.2,1.4,.3,1) both; }
         #loveCelebrationParticles > span { position:absolute; left:50%; top:50%; font-size:24px; animation:loveParticle 1.8s ease-out forwards; }
         @media (prefers-reduced-motion: reduce) { .muyu-btn.love-tapping, .love-celebration-panel, .love-float, .love-ripple, #loveCelebrationParticles > span { animation-duration:.01ms !important; } }
+        /* 520 celebration overlays full-screen mode; effects do not intercept taps. */
+        #love520Overlay { position:fixed; inset:0; z-index:110; pointer-events:none; overflow:hidden; opacity:0; visibility:hidden; }
+        #love520Overlay.active { opacity:1; visibility:visible; }
+        #love520Overlay .love520-backdrop { position:absolute; inset:0; background:radial-gradient(circle,rgba(255,247,251,.95),rgba(251,113,133,.62) 60%,rgba(190,18,60,.78)); animation:love520Flash 2.9s both; }
+        #love520Overlay .love520-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+        #love520Overlay .love520-heart { display:block; font-size:min(130vw,135vh); line-height:1; color:#fb1f64; filter:drop-shadow(0 0 42px #fff) drop-shadow(0 15px 36px #be123c); transform-origin:center center; animation:love520Giant 3.1s cubic-bezier(.25,.75,.2,1) both; }
+        #love520Overlay .love520-message { position:absolute; top:48%; left:50%; width:95%; transform:translate(-50%,-50%); color:white; font-weight:900; text-shadow:0 3px 16px #9f1239,0 1px 5px #881337; animation:love520Text 3.1s both; }
+        #love520Overlay .love520-message strong { display:block; font-size:clamp(52px,16vw,100px); letter-spacing:.03em; line-height:1.05; }
+        #love520Overlay .love520-message span { display:block; font-size:clamp(17px,5vw,26px); margin-top:12px; }
+        #love520Overlay .love520-spark { position:absolute; top:50%; left:50%; font-size:clamp(18px,7vw,48px); animation:love520Scatter var(--dur,1.8s) cubic-bezier(.18,.7,.2,1) forwards; animation-delay:var(--delay,0s); filter:drop-shadow(0 1px 3px #fff); }
+        .love520-count-glow { animation:love520Count .7s ease-in-out infinite alternate; }
+        @keyframes love520Flash { 0% { opacity:0; } 12%,64% { opacity:1; } 100% { opacity:0; } }
+        @keyframes love520Giant { 0% {transform:scale(.04) rotate(-30deg);opacity:0;} 22% {transform:scale(1.16) rotate(8deg);opacity:1;} 36% {transform:scale(.95) rotate(-3deg);} 49%,67% {transform:scale(1.05);opacity:1;} 100% {transform:scale(1.85);opacity:0;} }
+        @keyframes love520Text { 0%,10% { opacity:0;transform:translate(-50%,-50%) scale(.3);} 30%,70% { opacity:1;transform:translate(-50%,-50%) scale(1);} 100% {opacity:0;transform:translate(-50%,-50%) scale(1.2);} }
+        @keyframes love520Scatter { 0% {opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(0);} 15% {opacity:1;} 100% {opacity:0;transform:translate(var(--x),var(--y)) scale(var(--size,1)) rotate(var(--rotation));} }
+        @keyframes love520Count { from {transform:scale(1);filter:drop-shadow(0 0 2px #fecdd3);} to {transform:scale(1.18);filter:drop-shadow(0 0 12px #f43f5e);} }
+        @media (prefers-reduced-motion: reduce) { #love520Overlay .love520-heart, #love520Overlay .love520-message, #love520Overlay .love520-spark, #love520Overlay .love520-backdrop, .love520-count-glow { animation-duration:.01ms!important;animation-delay:0ms!important; } #love520Overlay.active .love520-backdrop {opacity:.75;} #love520Overlay.active .love520-heart, #love520Overlay.active .love520-message {opacity:1;} }
+
+        /* 520 隱藏彩蛋：達成後進入沉浸式全螢幕連擊。 */
+        #love520Fullscreen { position:fixed; inset:0; z-index:100; display:none; flex-direction:column; align-items:center; justify-content:center; overflow:hidden; background:radial-gradient(ellipse at 50% 35%,#ffb8cc 0%,#fa467e 42%,#a90e47 100%); color:white; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
+        #love520Fullscreen.active { display:flex; }
+        #love520Fullscreen::before { content:''; position:absolute; inset:-40%; pointer-events:none; background:conic-gradient(from 0deg,transparent,rgba(255,255,255,.14),transparent,rgba(255,255,255,.10),transparent); animation: love520Rotate 15s linear infinite; }
+        #love520Fullscreen .full520-top {position:absolute; top:max(28px,env(safe-area-inset-top)); left:20px; right:20px; text-align:center; z-index:2; pointer-events:none;}
+        #love520Fullscreen .full520-subtitle {font-size:clamp(13px,3.8vw,20px);font-weight:700;letter-spacing:.22em;text-shadow:0 2px 14px #a90e47;}
+        #love520Fullscreen .full520-number {margin-top:12px;font-size:clamp(78px,24vw,160px);font-weight:1000;letter-spacing:-.06em;line-height:1.05; font-variant-numeric:tabular-nums; filter:drop-shadow(0 7px 16px rgba(112,0,50,.5));transition:transform .1s cubic-bezier(.2,1.5,.3,1);}
+        #love520Fullscreen .full520-number.pop {transform:scale(1.14);}
+        #love520Fullscreen .full520-heart {position:relative; font-size:min(86vw,60vh);line-height:1; filter:drop-shadow(0 12px 14px #9f1239) drop-shadow(0 0 25px #fff7); transform-origin:center; pointer-events:none; animation: full520Heartbeat 1.6s ease-in-out infinite;}
+        #love520Fullscreen .full520-heart.pulse {animation:full520Tap .32s cubic-bezier(.14,1.6,.3,1) both;}
+        #love520Fullscreen .full520-caption {position:absolute; bottom:max(50px,calc(env(safe-area-inset-bottom) + 35px)); left:0; right:0; text-align:center; font-weight:800;font-size:clamp(17px,5vw,25px);letter-spacing:.15em; pointer-events:none; text-shadow:0 3px 15px #a90e47;}
+        #love520Fullscreen .full520-close {position:absolute;z-index:5;top:max(20px,env(safe-area-inset-top));right:14px;display:grid;place-items:center; height:43px;width:43px;border:1px solid #ffffff77;border-radius:50%;background:#ffffff33;color:#fff;font-size:24px;backdrop-filter:blur(8px);cursor:pointer;touch-action:manipulation;}
+        #love520Fullscreen .full520-particles {position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:3;}
+        #love520Fullscreen .full520-particle {position:absolute; font-size:clamp(23px,5vw,42px); animation: full520Float .8s ease-out forwards; pointer-events:none; text-shadow:0 2px 8px #fff6;}
+        #love520Fullscreen .full520-ripple {position:absolute;width:85px;height:85px;border:4px solid rgba(255,255,255,.8);border-radius:50%;animation:full520Ripple .5s ease-out forwards;pointer-events:none;}
+        @keyframes love520Rotate {to{transform:rotate(360deg)}}
+        @keyframes full520Heartbeat {50%{transform:scale(1.075)}}
+        @keyframes full520Tap {0%{transform:scale(.78) rotate(-7deg)}55%{transform:scale(1.17) rotate(4deg)}100%{transform:scale(1)}}
+        @keyframes full520Float {0%{opacity:1;transform:translate(-50%,-50%) scale(.5)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.7) rotate(var(--rotate))}}
+        @keyframes full520Ripple {0%{opacity:1;transform:translate(-50%,-50%) scale(.2)}100%{opacity:0;transform:translate(-50%,-50%) scale(2)}}
+        @media(prefers-reduced-motion:reduce){#love520Fullscreen::before,#love520Fullscreen .full520-heart,#love520Fullscreen .full520-particle,#love520Fullscreen .full520-ripple{animation-duration:.01ms!important;}}
         ::-webkit-scrollbar {
             width: 4px;
             height: 4px;
@@ -123,6 +162,22 @@
     </style>
 </head>
 <body class="h-full text-slate-800 flex flex-col font-sans bg-rose-50/50 antialiased selection:bg-rose-200">
+    <div id="love520Overlay" aria-hidden="true">
+        <div class="love520-backdrop"></div>
+        <div id="love520Particles"></div>
+        <div class="love520-center"><span class="love520-heart">♥</span><div class="love520-message"><strong>520！</strong><span>每一下，都是滿滿的我愛你 💕</span></div></div>
+    </div>
+
+
+    <!-- Unlocks silently at 520 taps. Every tap in this view uses the existing batch-saving path. -->
+    <div id="love520Fullscreen" aria-label="全螢幕想念敲擊模式" onclick="handleLove520FullscreenClick(event)">
+        <div class="full520-top"><div class="full520-subtitle">每一聲心跳，都是想你</div><div class="full520-number" id="love520FullscreenCount" aria-live="off">520</div></div>
+        <div class="full520-heart" id="love520FullscreenHeart" aria-hidden="true">♥</div>
+        <div class="full520-caption">❤ 想你，不只 520 次 ❤</div>
+        <div class="full520-particles" id="love520FullscreenParticles" aria-hidden="true"></div>
+        <button class="full520-close" type="button" aria-label="退出全螢幕敲擊模式" onclick="exitLove520Fullscreen(event)">×</button>
+    </div>
+
     <div id="app" class="flex-1 flex flex-col max-w-md w-full mx-auto bg-white/90 backdrop-blur-md shadow-2xl min-h-screen border-x border-rose-100/60 pb-20">
         
         <!-- Header (Unfrozen for larger view area) -->
@@ -1495,6 +1550,34 @@
             });
         }
 
+        // HEIC/HEIF: mobile browsers may be able to select files but cannot decode them.
+        // Only fetch the converter if a native decoding attempt fails.
+        let heicConverterPromise = null;
+        function loadHeicConverter() {
+            if (typeof window.heic2any === 'function') return Promise.resolve(window.heic2any);
+            if (heicConverterPromise) return heicConverterPromise;
+            heicConverterPromise = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js';
+                script.async = true;
+                script.onload = () => typeof window.heic2any === 'function'
+                    ? resolve(window.heic2any) : reject(new Error('HEIC 轉檔元件無法啟動'));
+                script.onerror = () => reject(new Error('HEIC 轉檔元件下載失敗，請檢查網路連線'));
+                document.head.appendChild(script);
+            }).catch(err => { heicConverterPromise = null; throw err; });
+            return heicConverterPromise;
+        }
+        function isHeicFile(file) {
+            return /\.(heic|heif)$/i.test(file.name || '') || /image\/(heic|heif|heic-sequence|heif-sequence)/i.test(file.type || '');
+        }
+        async function convertHeicToJpeg(file) {
+            const convert = await loadHeicConverter();
+            const converted = await convert({ blob: file, toType: 'image/jpeg', quality: 0.85 });
+            const result = Array.isArray(converted) ? converted[0] : converted;
+            if (!(result instanceof Blob) || !result.size) throw new Error('HEIC 轉換未產生有效圖片');
+            return result;
+        }
+
         function handleImageSelection(e) {
             const file = e.target.files && e.target.files[0];
             if (!file) return;
@@ -1505,7 +1588,7 @@
             const submitBtn = document.getElementById('submitLetterBtn');
             state.selectedFile = file;
             state.currentImageUrl = '';
-            if (nameEl) nameEl.textContent = '正在處理照片...';
+            if (nameEl) nameEl.textContent = isHeicFile(file) ? 'HEIC 照片處理中（可能需要較長時間）...' : '正在處理照片...';
             if (submitBtn) submitBtn.disabled = true;
             const job = compressImageToBase64(file);
             state.imageProcessingPromise = job;
@@ -1519,8 +1602,8 @@
                 if (selectionId !== state.imageSelectionId) return;
                 console.error('照片處理失敗', err);
                 clearSelectedImage();
-                nameEl.textContent = '照片無法解碼，請改用 JPG / PNG 照片';
-                alert('這張照片無法處理。請使用 JPG、PNG 或手機截圖再試一次。');
+                nameEl.textContent = '轉換失敗，請使用 JPG / PNG 或截圖';
+                alert('照片處理失敗：' + (err?.message || '請改用 JPG / PNG 或截圖再試一次') + '。');
             }).finally(() => {
                 if (selectionId === state.imageSelectionId) {
                     state.imageProcessingPromise = null;
@@ -1533,23 +1616,40 @@
         // 限制 Base64 長度，避免超過 Google Sheets 單格 50,000 字元上限。
         async function compressImageToBase64(file) {
             if (!file || file.size === 0) throw new Error('空白照片');
-            const img = new Image();
-            const objectUrl = URL.createObjectURL(file);
-            const load = src => new Promise((resolve, reject) => {
-                img.onload = () => resolve();
-                img.onerror = () => reject(new Error('瀏覽器無法解碼此照片格式'));
-                img.src = src;
-            });
+            let sourceFile = file;
+            let img = null;
+            const decode = async (blob) => {
+                const candidate = new Image();
+                const objectUrl = URL.createObjectURL(blob);
+                const load = src => new Promise((resolve, reject) => {
+                    candidate.onload = () => resolve();
+                    candidate.onerror = () => reject(new Error('此手機瀏覽器無法解碼照片'));
+                    candidate.src = src;
+                });
+                try {
+                    try { await load(objectUrl); }
+                    catch (_) {
+                        const dataUrl = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result);
+                            reader.onerror = () => reject(new Error('讀取照片失敗'));
+                            reader.readAsDataURL(blob);
+                        });
+                        await load(dataUrl);
+                    }
+                    if (!candidate.naturalWidth || !candidate.naturalHeight) throw new Error('無效照片尺寸');
+                    return candidate;
+                } finally {
+                    URL.revokeObjectURL(objectUrl);
+                }
+            };
             try {
-                try { await load(objectUrl); }
-                catch (_) {
-                    const dataUrl = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result);
-                        reader.onerror = () => reject(new Error('讀取檔案失敗'));
-                        reader.readAsDataURL(file);
-                    });
-                    await load(dataUrl);
+                // Prefer native conversion when available (notably iOS Safari).
+                try { img = await decode(sourceFile); }
+                catch (nativeErr) {
+                    if (!isHeicFile(file)) throw nativeErr;
+                    sourceFile = await convertHeicToJpeg(file);
+                    img = await decode(sourceFile);
                 }
                 let maxDim = 480;
                 for (let attempt = 0; attempt < 7; attempt++) {
@@ -1569,7 +1669,7 @@
                 }
                 throw new Error('照片壓縮後仍然太大');
             } finally {
-                URL.revokeObjectURL(objectUrl);
+                // Object URLs from each decoding attempt are released by decode().
             }
         }
 
@@ -1723,13 +1823,117 @@
 
             // Visual effects
             document.getElementById('currentBatchCount').innerText = state.muyuBatch.count;
-            triggerFloatHeartAnimation();
+            const full520 = document.getElementById('love520Fullscreen');
+            if (full520 && full520.classList.contains('active')) {
+                love520SessionCount++;
+                renderLove520FullscreenCount();
+            } else {
+                triggerFloatHeartAnimation();
+                if (state.muyuBatch.count === 520) {
+                    love520SessionCount = 520;
+                    enterLove520Fullscreen();
+                    triggerLove520Celebration();
+                }
+            }
 
             // Reset batch timer
             clearTimeout(state.muyuBatch.timer);
             state.muyuBatch.timer = setTimeout(() => {
                 sendMuyuBatchToGas();
             }, state.muyuInterval);
+        }
+
+        let love520Timer = null;
+        let love520SessionCount = 0;
+        function enterLove520Fullscreen() {
+            const fullscreen = document.getElementById('love520Fullscreen');
+            if (!fullscreen) return;
+            fullscreen.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            renderLove520FullscreenCount();
+        }
+        function renderLove520FullscreenCount() {
+            const number = document.getElementById('love520FullscreenCount');
+            if (!number) return;
+            number.textContent = love520SessionCount.toLocaleString('zh-TW');
+            number.classList.remove('pop');
+            void number.offsetWidth;
+            number.classList.add('pop');
+            clearTimeout(number._popTimer);
+            number._popTimer = setTimeout(() => number.classList.remove('pop'), 115);
+        }
+        function handleLove520FullscreenClick(e) {
+            if (!document.getElementById('love520Fullscreen').classList.contains('active')) return;
+            handleMuyuClick();
+            const heart = document.getElementById('love520FullscreenHeart');
+            heart.classList.remove('pulse');
+            void heart.offsetWidth;
+            heart.classList.add('pulse');
+            const particles = document.getElementById('love520FullscreenParticles');
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                // Limit particles for sustained rapid tapping.
+                if (particles.childElementCount > 42) particles.replaceChildren();
+                const x = Number.isFinite(e.clientX) && e.clientX > 0 ? e.clientX : window.innerWidth / 2;
+                const y = Number.isFinite(e.clientY) && e.clientY > 0 ? e.clientY : window.innerHeight / 2;
+                for (let i = 0; i < 3; i++) {
+                    const dot = document.createElement('span');
+                    dot.className = 'full520-particle';
+                    dot.textContent = ['💗','💕','✨'][i];
+                    dot.style.left = `${x}px`;
+                    dot.style.top = `${y}px`;
+                    dot.style.setProperty('--dx', `${(Math.random()-.5)*230}px`);
+                    dot.style.setProperty('--dy', `${-70-Math.random()*190}px`);
+                    dot.style.setProperty('--rotate', `${(Math.random()-.5)*90}deg`);
+                    particles.appendChild(dot);
+                    setTimeout(() => dot.remove(), 850);
+                }
+                const ripple = document.createElement('span');
+                ripple.className = 'full520-ripple';
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+                particles.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 550);
+            }
+            if (navigator.vibrate) { try { navigator.vibrate(30); } catch (_) {} }
+        }
+        function exitLove520Fullscreen(e) {
+            if (e) e.stopPropagation();
+            const fullscreen = document.getElementById('love520Fullscreen');
+            if (fullscreen) fullscreen.classList.remove('active');
+            document.body.style.overflow = '';
+            love520SessionCount = 0;
+            // Do not cancel the current batch or discard any taps.
+        }
+        function triggerLove520Celebration() {
+            const overlay = document.getElementById('love520Overlay');
+            const particles = document.getElementById('love520Particles');
+            if (!overlay || !particles) return;
+            clearTimeout(love520Timer);
+            overlay.classList.remove('active');
+            particles.replaceChildren();
+            // Bounded number of particles; no server work or counter resets here.
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                const width = Math.max(240, window.innerWidth);
+                const height = Math.max(400, window.innerHeight);
+                for (let i = 0; i < 70; i++) {
+                    const dot = document.createElement('span');
+                    dot.className = 'love520-spark';
+                    dot.textContent = ['💗','💕','💖','♥','✨','💘'][i % 6];
+                    const theta = Math.random() * Math.PI * 2;
+                    const radius = Math.max(width, height) * (.25 + Math.random() * .62);
+                    dot.style.setProperty('--x', `${Math.cos(theta) * radius}px`);
+                    dot.style.setProperty('--y', `${Math.sin(theta) * radius}px`);
+                    dot.style.setProperty('--rotation', `${Math.round((Math.random()-.5)*700)}deg`);
+                    dot.style.setProperty('--size', String(.7 + Math.random() * 1.35));
+                    dot.style.setProperty('--dur', `${1.25 + Math.random() * 1.35}s`);
+                    dot.style.setProperty('--delay', `${Math.random() * .35}s`);
+                    particles.appendChild(dot);
+                }
+            }
+            void overlay.offsetWidth;
+            overlay.classList.add('active');
+            if (navigator.vibrate) { try { navigator.vibrate([100,55,160,65,240,80,300]); } catch (_) {} }
+            love520Timer = setTimeout(() => { overlay.classList.remove('active'); particles.replaceChildren(); }, 3200);
         }
 
         function triggerFloatHeartAnimation() {
@@ -1776,6 +1980,7 @@
             state.muyuBatch.startTime = null;
             state.muyuBatch.count = 0;
             document.getElementById('currentBatchCount').innerText = '0';
+
 
             postToGas({ action: 'addMiss', data: newMiss });
         }
