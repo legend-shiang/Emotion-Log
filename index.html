@@ -99,6 +99,16 @@
         .animate-open-letter {
             animation: openEnvelope 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
+        @keyframes lovePop { 0% { transform: scale(.75) rotate(-8deg); opacity: 0; } 55% { transform: scale(1.12) rotate(4deg); opacity: 1; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+        @keyframes loveParticle { 0% { transform: translate(0, 0) scale(.65); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(1.35); opacity: 0; } }
+        @keyframes loveTap { 0% { transform: scale(1); } 35% { transform: scale(.77) rotate(-4deg); filter: brightness(1.3); } 68% { transform: scale(1.14) rotate(2deg); } 100% { transform: scale(1); } }
+        @keyframes loveRipple { 0% { transform: translate(-50%, -50%) scale(.55); opacity: .9; } 100% { transform: translate(-50%, -50%) scale(2.1); opacity: 0; } }
+        .muyu-btn.love-tapping { animation: loveTap .34s cubic-bezier(.2,.8,.2,1); }
+        .love-ripple { position: absolute; left: 50%; top: 50%; width: 112px; height: 112px; border: 3px solid rgba(244,63,94,.75); border-radius: 9999px; animation: loveRipple .6s ease-out forwards; pointer-events: none; }
+        .love-float { position: absolute; left: 50%; top: 50%; font-weight: 900; font-size: 26px; color: #e11d48; text-shadow: 0 2px 8px #fff; animation: loveParticle 1s ease-out forwards; }
+        .love-celebration-panel { animation: lovePop .65s cubic-bezier(.2,1.4,.3,1) both; }
+        #loveCelebrationParticles > span { position:absolute; left:50%; top:50%; font-size:24px; animation:loveParticle 1.8s ease-out forwards; }
+        @media (prefers-reduced-motion: reduce) { .muyu-btn.love-tapping, .love-celebration-panel, .love-float, .love-ripple, #loveCelebrationParticles > span { animation-duration:.01ms !important; } }
         ::-webkit-scrollbar {
             width: 4px;
             height: 4px;
@@ -216,9 +226,9 @@
 
                         <!-- Woodblock Button -->
                         <div class="my-5 flex flex-col items-center justify-center relative w-full">
-                            <div id="muyuFloatContainer" class="absolute inset-0 pointer-events-none flex justify-center items-center"></div>
+                            <div id="muyuFloatContainer" class="absolute inset-0 pointer-events-none flex justify-center items-center z-30 overflow-visible" aria-hidden="true"></div>
                             
-                            <button id="muyuBtn" onclick="handleMuyuClick()" class="muyu-btn relative w-36 h-36 rounded-full bg-gradient-to-tr from-rose-500 via-pink-500 to-rose-400 hover:from-rose-600 hover:to-pink-600 text-white font-bold shadow-xl shadow-rose-300/60 flex flex-col items-center justify-center border-4 border-white group cursor-pointer active:scale-90 transition-all">
+                            <button id="muyuBtn" onclick="handleMuyuClick()" class="muyu-btn relative z-10 w-36 h-36 rounded-full bg-gradient-to-tr from-rose-500 via-pink-500 to-rose-400 hover:from-rose-600 hover:to-pink-600 text-white font-bold shadow-xl shadow-rose-300/60 flex flex-col items-center justify-center border-4 border-white group cursor-pointer active:scale-90 transition-all">
                                 <div class="w-13 h-13 bg-white/20 rounded-full flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
                                     <i class="fa-solid fa-heart text-3xl text-white"></i>
                                 </div>
@@ -245,6 +255,10 @@
                             </button>
                         </div>
 
+                        <div id="unreadLettersNotice" class="hidden rounded-2xl border border-rose-200 bg-gradient-to-r from-rose-50 to-pink-50 px-3 py-2 flex items-center justify-between gap-2" role="status" aria-live="polite">
+                            <span id="unreadLettersNoticeText" class="text-xs font-bold text-rose-700">有新的甜蜜情書等你拆開 💌</span>
+                            <button onclick="openNextUnreadLetter()" class="shrink-0 rounded-xl bg-rose-500 text-white px-3 py-1.5 text-xs font-semibold">拆開情書</button>
+                        </div>
                         <!-- Mailbox Container -->
                         <div id="loveLettersContainer" class="space-y-2 max-h-56 overflow-y-auto pr-0.5">
                             <!-- Dynamic Injection -->
@@ -552,10 +566,10 @@
                         <span class="text-[10px] text-slate-400 font-normal"></span>
                     </label>
                     <div class="mt-1 flex items-center gap-3">
-                        <input type="file" id="letterImageInput" accept="image/*" onchange="handleImageSelection(event)" class="hidden">
-                        <button type="button" onclick="document.getElementById('letterImageInput').click()" class="px-3 py-2 bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 rounded-xl font-medium flex items-center gap-1.5 text-xs transition">
-                            <i class="fa-solid fa-image"></i> 選擇相片
-                        </button>
+                        <input type="file" id="letterImageInput" accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif" onchange="handleImageSelection(event)" class="sr-only">
+                         <label for="letterImageInput" class="px-3 py-2 bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 rounded-xl font-medium flex items-center gap-1.5 text-xs transition cursor-pointer">
+                             <i class="fa-solid fa-image"></i> 選擇相片
+                         </label>
                         <span id="letterImageName" class="text-[11px] text-slate-400 truncate max-w-[180px]">未選擇照片</span>
                     </div>
                     <!-- Image Preview -->
@@ -674,6 +688,17 @@
         </div>
     </div>
 
+    <!-- 甜蜜情書送達 / 拆信動畫，保留原有彈窗流程 -->
+    <div id="loveCelebration" class="fixed inset-0 z-[65] hidden pointer-events-none flex items-center justify-center p-5" aria-live="polite">
+        <div id="loveCelebrationBackdrop" class="absolute inset-0 bg-rose-950/65 backdrop-blur-sm"></div>
+        <div class="love-celebration-panel relative z-10 bg-white/95 rounded-[2rem] shadow-2xl px-7 py-9 text-center w-full max-w-xs border border-rose-100">
+            <div id="loveCelebrationIcon" class="text-6xl mb-4">💌</div>
+            <h3 id="loveCelebrationTitle" class="text-xl font-extrabold text-rose-600">愛意送達</h3>
+            <p id="loveCelebrationSubtitle" class="text-xs text-slate-500 mt-3 leading-relaxed">一份溫柔，正在飛向對方</p>
+        </div>
+        <div id="loveCelebrationParticles" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+    </div>
+
     <!-- MODAL 4: Emotion Log Entry Modal -->
     <div id="logModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
         <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -762,7 +787,7 @@
 
     <script>
         const PRESET_TAGS = ["價值觀差異", "溝通語氣", "邊界感與安全感", "生活習慣", "陪伴時間與分配", "承諾與期望落差", "情緒消化方式"];
-        const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbwh1F-Mw5QMzN2MACdh-viLc_0jWqdYvxwObZg-z1QmUTOKs7MyFmcj8ASvnSwvdQqL/exec";
+        const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbwKR22W0jQAHuwvEEVAtVTcIXfIQN8BQS4_GRNbHXinucwu4Eejnh_1rqXgdtexZjlB/exec";
 
         // 設定起算基準日為 2026-10-14 00:00:00
         const BASE_CALM_START_TIMESTAMP = new Date('2026-10-14T00:00:00').getTime();
@@ -787,7 +812,11 @@
             currentHeartRating: 5,
             activeReadingLetterId: null,
             selectedFile: null,      // 儲存原始選取照片檔案
-            currentImageUrl: '',     // 上傳圖床後取得的短網址
+            currentImageUrl: '',     // 壓縮後的圖片 Data URL
+            imageProcessingPromise: null,
+            imageSelectionId: 0,
+            unreadAutoPrompted: false,
+            celebrationTimer: null,
             chartInstance: null
         };
 
@@ -843,6 +872,10 @@
 
             // Start Timer Loop
             setInterval(updateTimerDisplay, 1000);
+            // 回到 App 時取得最新未讀清單；不需要背景推播權限。
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden && state.currentUser) syncWithGas();
+            });
         });
 
         function loadLocalState() {
@@ -866,7 +899,10 @@
             if (state.displayName) localStorage.setItem('love_app_name', state.displayName);
             localStorage.setItem('love_app_logs', JSON.stringify(state.logs));
             localStorage.setItem('love_app_misses', JSON.stringify(state.misses));
-            localStorage.setItem('love_app_letters', JSON.stringify(state.letters));
+            try { localStorage.setItem('love_app_letters', JSON.stringify(state.letters.map(l => {
+                const { imageUrl, ...summary } = l;
+                return { ...summary, hasImage: !!(l.hasImage || imageUrl) };
+            }))); } catch (e) { console.warn('情書快取容量不足', e); }
         }
 
         function updateUserBadge() {
@@ -954,6 +990,7 @@
                 localStorage.removeItem('love_app_name');
                 state.currentUser = null;
                 state.displayName = '';
+                state.unreadAutoPrompted = false;
                 document.getElementById('loginModal').classList.remove('hidden');
             }
         }
@@ -1076,6 +1113,7 @@
             if (!container) return;
 
             container.innerHTML = '';
+            updateUnreadNotice();
 
             // Only show letters sent TO current user
             const myReceivedLetters = state.letters.filter(l => l.recipient === state.currentUser);
@@ -1229,7 +1267,11 @@
         }
 
         async function openReadLetterModal(letterId) {
+            const existingModal = document.getElementById('readLetterModal');
+            if (!existingModal.classList.contains('hidden')) return;
             state.activeReadingLetterId = letterId;
+            const unread = state.letters.find(l => String(l.id) === String(letterId) && !l.isRead && l.recipient === state.currentUser);
+            if (unread) showLoveCelebration('received');
             const modal = document.getElementById('readLetterModal');
             const loading = document.getElementById('letterDetailLoading');
             const body = document.getElementById('letterDetailBody');
@@ -1307,22 +1349,54 @@
 
         async function confirmReadCurrentLetter() {
             if (!state.activeReadingLetterId) return;
+            const id = state.activeReadingLetterId;
+            const btn = document.querySelector('#readLetterModal button[onclick="confirmReadCurrentLetter()"]');
+            if (btn) btn.disabled = true;
+            try {
+                const result = await postToGas({ action: 'markLetterRead', letterId: id });
+                if (!result) throw new Error('雲端沒有確認已讀');
+                const letter = state.letters.find(l => String(l.id) === String(id));
+                if (letter) letter.isRead = true;
+                saveLocalState();
+                document.getElementById('readLetterModal').classList.add('hidden');
+                state.activeReadingLetterId = null;
+                renderLettersList();
+                // 每封未讀都持續提示，讀完一封接著拆下一封。
+                if (getUnreadLetters().length) setTimeout(openNextUnreadLetter, 420);
+            } catch (err) {
+                alert('標示已讀失敗，請檢查網路後再試。');
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
 
-            const letter = state.letters.find(l => l.id === state.activeReadingLetterId);
-            if (letter) letter.isRead = true;
+        function getUnreadLetters() {
+            return state.letters.filter(l => l.recipient === state.currentUser && !l.isRead)
+                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        }
 
-            saveLocalState();
-            renderLettersList();
-            document.getElementById('readLetterModal').classList.add('hidden');
+        function updateUnreadNotice() {
+            const notice = document.getElementById('unreadLettersNotice');
+            const label = document.getElementById('unreadLettersNoticeText');
+            if (!notice || !label) return;
+            const count = getUnreadLetters().length;
+            notice.classList.toggle('hidden', count === 0);
+            label.textContent = count ? `💌 你有 ${count} 封未讀情書，等你一封封拆開` : '';
+        }
 
-            postToGas({ action: 'markLetterRead', letterId: state.activeReadingLetterId });
-            state.activeReadingLetterId = null;
+        function openNextUnreadLetter() {
+            const next = getUnreadLetters()[0];
+            if (next) openReadLetterModal(next.id);
         }
 
         function checkUnreadLetters() {
-            const unread = state.letters.find(l => l.recipient === state.currentUser && !l.isRead);
-            if (unread) {
-                openReadLetterModal(unread.id);
+            updateUnreadNotice();
+            // 同一登入畫面只自動彈一次，避免每次同步蓋掉正在操作的表單。
+            if (!state.unreadAutoPrompted && getUnreadLetters().length &&
+                document.getElementById('letterModal').classList.contains('hidden') &&
+                document.getElementById('readLetterModal').classList.contains('hidden')) {
+                state.unreadAutoPrompted = true;
+                openNextUnreadLetter();
             }
         }
 
@@ -1391,6 +1465,8 @@
 
         // 新增修復：清除選擇的相片與狀態
         function clearSelectedImage() {
+            state.imageSelectionId++;
+            state.imageProcessingPromise = null;
             state.selectedFile = null;
             state.currentImageUrl = '';
 
@@ -1420,79 +1496,104 @@
         }
 
         function handleImageSelection(e) {
-            const file = e.target.files[0];
+            const file = e.target.files && e.target.files[0];
             if (!file) return;
-
+            const selectionId = ++state.imageSelectionId;
             const nameEl = document.getElementById('letterImageName');
             const previewBox = document.getElementById('imagePreviewBox');
             const previewEl = document.getElementById('imagePreviewEl');
             const submitBtn = document.getElementById('submitLetterBtn');
-            
-            if (nameEl) nameEl.innerText = '相片處理中...';
-            if (submitBtn) submitBtn.disabled = true;
-
             state.selectedFile = file;
-
-            compressImageToBase64(file).then(compressedBase64 => {
-                if (compressedBase64 && compressedBase64.startsWith('data:image/')) {
-                    state.currentImageUrl = compressedBase64;
-                    previewEl.src = compressedBase64;
-                    previewBox.classList.remove('hidden');
-                    if (nameEl) nameEl.innerText = file.name + ' (已編碼)';
-                } else {
-                    throw new Error("編碼格式無效");
-                }
+            state.currentImageUrl = '';
+            if (nameEl) nameEl.textContent = '正在處理照片...';
+            if (submitBtn) submitBtn.disabled = true;
+            const job = compressImageToBase64(file);
+            state.imageProcessingPromise = job;
+            job.then(data => {
+                if (selectionId !== state.imageSelectionId) return;
+                state.currentImageUrl = data;
+                previewEl.src = data;
+                previewBox.classList.remove('hidden');
+                nameEl.textContent = `${file.name}（已壓縮）`;
             }).catch(err => {
-                console.error("相片編碼失敗:", err);
-                if (nameEl) nameEl.innerText = '相片讀取失敗，請重試';
+                if (selectionId !== state.imageSelectionId) return;
+                console.error('照片處理失敗', err);
                 clearSelectedImage();
+                nameEl.textContent = '照片無法解碼，請改用 JPG / PNG 照片';
+                alert('這張照片無法處理。請使用 JPG、PNG 或手機截圖再試一次。');
             }).finally(() => {
-                if (submitBtn) submitBtn.disabled = false;
+                if (selectionId === state.imageSelectionId) {
+                    state.imageProcessingPromise = null;
+                    if (submitBtn) submitBtn.disabled = false;
+                }
             });
         }
 
-        // 高穩定性 Canvas 微縮至 Base64 (輕量解析度 320px，寬高維護，安全不掉包)
-        function compressImageToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onerror = (err) => reject(err);
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.onerror = (err) => reject(err);
-                    img.onload = () => {
-                        try {
-                            const canvas = document.createElement('canvas');
-                            const ctx = canvas.getContext('2d');
-                            
-                            const maxDim = 320;
-                            let width = img.width;
-                            let height = img.height;
-
-                            if (width > height && width > maxDim) {
-                                height = Math.round((height * maxDim) / width);
-                                width = maxDim;
-                            } else if (height > maxDim) {
-                                width = Math.round((width * maxDim) / height);
-                                height = maxDim;
-                            }
-
-                            canvas.width = width;
-                            canvas.height = height;
-                            
-                            ctx.fillStyle = '#FFFFFF';
-                            ctx.fillRect(0, 0, width, height);
-                            ctx.drawImage(img, 0, 0, width, height);
-
-                            const dataUrl = canvas.toDataURL('image/jpeg', 0.55);
-                            resolve(dataUrl);
-                        } catch (e) {
-                            reject(e);
-                        }
-                    };
-                    img.src = event.target.result;
-                };
-                reader.readAsDataURL(file);
+        // Android Chrome / iOS Safari 共用：先以物件 URL 解碼，必要時使用 FileReader 備援。
+        // 限制 Base64 長度，避免超過 Google Sheets 單格 50,000 字元上限。
+        async function compressImageToBase64(file) {
+            if (!file || file.size === 0) throw new Error('空白照片');
+            const img = new Image();
+            const objectUrl = URL.createObjectURL(file);
+            const load = src => new Promise((resolve, reject) => {
+                img.onload = () => resolve();
+                img.onerror = () => reject(new Error('瀏覽器無法解碼此照片格式'));
+                img.src = src;
             });
+            try {
+                try { await load(objectUrl); }
+                catch (_) {
+                    const dataUrl = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = () => reject(new Error('讀取檔案失敗'));
+                        reader.readAsDataURL(file);
+                    });
+                    await load(dataUrl);
+                }
+                let maxDim = 480;
+                for (let attempt = 0; attempt < 7; attempt++) {
+                    const scale = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+                    canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) throw new Error('手機無法建立圖片畫布');
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const quality = Math.max(.35, .72 - attempt * .06);
+                    const data = canvas.toDataURL('image/jpeg', quality);
+                    if (data.startsWith('data:image/jpeg;base64,') && data.length < 40000) return data;
+                    maxDim = Math.round(maxDim * .78);
+                }
+                throw new Error('照片壓縮後仍然太大');
+            } finally {
+                URL.revokeObjectURL(objectUrl);
+            }
+        }
+
+        function showLoveCelebration(kind) {
+            const overlay = document.getElementById('loveCelebration');
+            const particles = document.getElementById('loveCelebrationParticles');
+            clearTimeout(state.celebrationTimer);
+            const received = kind === 'received';
+            document.getElementById('loveCelebrationIcon').textContent = received ? '💖' : '💌';
+            document.getElementById('loveCelebrationTitle').textContent = received ? '收到一份專屬的愛！' : '情書成功寄出！';
+            document.getElementById('loveCelebrationSubtitle').textContent = received ? '有人把滿滿的心意，悄悄寄給你 ✨' : '心意已飛向對方，願這份溫柔陪伴每一天 💕';
+            particles.replaceChildren();
+            for (let i = 0; i < 22; i++) {
+                const part = document.createElement('span');
+                part.textContent = i % 4 === 0 ? '✨' : (i % 3 === 0 ? '💗' : '💕');
+                part.style.setProperty('--dx', `${(Math.random() - .5) * 420}px`);
+                part.style.setProperty('--dy', `${(Math.random() - .5) * 660}px`);
+                part.style.setProperty('--rot', `${Math.random() * 300 - 150}deg`);
+                part.style.animationDelay = `${i * 30}ms`;
+                particles.appendChild(part);
+            }
+            overlay.classList.remove('hidden');
+            if (navigator.vibrate) navigator.vibrate(received ? [40, 65, 70] : [35, 60, 35, 60, 85]);
+            state.celebrationTimer = setTimeout(() => overlay.classList.add('hidden'), received ? 1200 : 1800);
         }
 
         function showSendingOverlay(title, subtitle) {
@@ -1511,44 +1612,45 @@
 
         async function handleLetterFormSubmit(e) {
             e.preventDefault();
+            const btn = document.getElementById('submitLetterBtn');
+            if (btn.disabled || !state.currentUser) return;
             const content = document.getElementById('letterContent').value.trim();
-            const recipient = state.currentUser === 'Me' ? 'Partner' : 'Me';
-
-            // 顯示全螢幕傳送動態 Overlay
-            showSendingOverlay("正在密碼加密與傳送情書...", "包含相片編碼傳送至 Google 雲端");
-
+            if (!content) return;
+            btn.disabled = true;
+            showSendingOverlay('正在把愛意裝進信封...', '照片和文字正在安全傳送到雲端 💌');
             try {
+                // 即使使用者選完照片立即點擊寄出，也要等待壓縮完成。
+                if (state.imageProcessingPromise) await state.imageProcessingPromise;
                 if (state.selectedFile && !state.currentImageUrl) {
                     state.currentImageUrl = await compressImageToBase64(state.selectedFile);
                 }
-
                 const finalImageUrl = state.currentImageUrl || '';
-                const hasValidImage = !!(finalImageUrl && finalImageUrl.startsWith('data:image/'));
-
                 const newLetter = {
                     id: 'letter_' + Date.now(),
                     sender: state.currentUser,
-                    recipient: recipient,
+                    recipient: state.currentUser === 'Me' ? 'Partner' : 'Me',
                     letterContent: content,
                     heartbeatRating: state.currentHeartRating,
                     timestamp: new Date().toISOString(),
-                    hasImage: hasValidImage,
+                    hasImage: !!finalImageUrl,
                     imageUrl: finalImageUrl
                 };
-
-                // 1. 本地更新
+                const success = await postToGas({ action: 'addLetter', data: newLetter });
+                if (!success) throw new Error('雲端儲存未確認');
                 state.letters.push(newLetter);
+                // 列表僅需 hasImage；勿將大量 Base64 存入 localStorage。
+                delete state.letters[state.letters.length - 1].imageUrl;
                 saveLocalState();
                 renderLettersList();
                 closeLetterModal();
-
-                // 2. 寫入 GAS
-                await postToGas({ action: 'addLetter', data: newLetter });
-            } catch(err) {
-                console.error("發送情書失敗:", err);
-                alert("傳送情書時發生問題，請重試一次。");
+                hideSendingOverlay();
+                showLoveCelebration('sent');
+            } catch (err) {
+                console.error('發送情書失敗', err);
+                alert('情書尚未確認寄出，請確認網路與照片格式後重試。原本內容會保留。');
             } finally {
                 hideSendingOverlay();
+                btn.disabled = false;
             }
         }
 
@@ -1632,18 +1734,27 @@
 
         function triggerFloatHeartAnimation() {
             const container = document.getElementById('muyuFloatContainer');
-            if (!container) return;
-
-            const heart = document.createElement('div');
-            heart.className = 'absolute text-rose-500 text-2xl animate-float-heart pointer-events-none';
-            heart.innerHTML = '<i class="fa-solid fa-heart"></i>';
-
-            // Random slight offset
-            const offsetX = (Math.random() - 0.5) * 60;
-            heart.style.transform = `translateX(${offsetX}px)`;
-
-            container.appendChild(heart);
-            setTimeout(() => heart.remove(), 1000);
+            const button = document.getElementById('muyuBtn');
+            if (!container || !button) return;
+            button.classList.remove('love-tapping');
+            void button.offsetWidth;
+            button.classList.add('love-tapping');
+            const ripple = document.createElement('span');
+            ripple.className = 'love-ripple';
+            container.appendChild(ripple);
+            ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+            for (let i = 0; i < 4; i++) {
+                const heart = document.createElement('span');
+                heart.className = 'love-float';
+                heart.textContent = i === 0 ? '+1 💗' : (i % 2 ? '♥' : '💕');
+                heart.style.setProperty('--dx', `${(Math.random() - .5) * 185}px`);
+                heart.style.setProperty('--dy', `${-75 - Math.random() * 125}px`);
+                heart.style.setProperty('--rot', `${(Math.random() - .5) * 65}deg`);
+                heart.style.animationDelay = `${i * 55}ms`;
+                container.appendChild(heart);
+                setTimeout(() => heart.remove(), 1350);
+            }
+            if (navigator.vibrate) navigator.vibrate(28);
         }
 
         async function sendMuyuBatchToGas() {
@@ -1806,17 +1917,18 @@
         // --- Network Helper: Post to Google Apps Script ---
         async function postToGas(payload) {
             try {
-                // 將 payload 轉字串，防止 Base64 特殊字元在 GAS postData 中解析錯誤
-                const bodyStr = JSON.stringify(payload);
                 const res = await fetch(state.gasUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: bodyStr,
+                    body: JSON.stringify(payload),
                     redirect: 'follow'
                 });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const reply = await res.json();
+                if (reply.status !== 'success') throw new Error(reply.message || '後端拒絕儲存');
                 return true;
-            } catch(e) {
-                console.warn("GAS Post warning:", e);
+            } catch (e) {
+                console.warn('Google Apps Script 寫入失敗:', e);
                 return false;
             }
         }
